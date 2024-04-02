@@ -1,34 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { ConsultaService } from './consulta.service';
-import { CreateConsultaDto } from './dto/create-consulta.dto';
+import { ConsultaDto } from './dto/create-consulta.dto';
 import { UpdateConsultaDto } from './dto/update-consulta.dto';
+import { Consulta } from './entities/consulta.entity';
 
 @Controller('consulta')
 export class ConsultaController {
   constructor(private readonly consultaService: ConsultaService) {}
 
-  @Post()
-  create(@Body() createConsultaDto: CreateConsultaDto) {
-    return this.consultaService.create(createConsultaDto);
+
+  @Post('crear')
+  addDato(@Body() consulta:ConsultaDto ) : Promise<Consulta>{
+      return this.consultaService.addConsulta(consulta);
   }
 
-  @Get()
-  findAll() {
-    return this.consultaService.findAll();
+  @Get('all')
+  async getconsultas(): Promise<Consulta[]>{
+    return this.consultaService.getAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.consultaService.findOne(+id);
+  async getId(@Param('id') id:number) : Promise<Consulta>{
+    return this.consultaService.getId(id)
+  }
+  @Get('paciente/:idPaciente')
+  async getConsultasByPacienteId(@Param('idPaciente', ParseIntPipe) idPaciente: number): Promise<Consulta[]> {
+    // Obtiene las consultas del servicio.
+    const consultas = await this.consultaService.getConsultasByPacienteId(idPaciente);
+  
+    // Devuelve las consultas.
+    return consultas;
+  }
+  
+  @Patch('actualizar/:id')
+  updateDatoId(@Param('id')id:number, @Body() consulta: ConsultaDto) : Promise<Consulta>{
+    return this.consultaService.updateConsultaId(id,consulta);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateConsultaDto: UpdateConsultaDto) {
-    return this.consultaService.update(+id, updateConsultaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.consultaService.remove(+id);
+  @Delete('eliminar/:id')
+  deleteDato(@Param('id') id : number) : Promise<boolean> {
+    return this.consultaService.deleteconsulta(id);
   }
 }
+
