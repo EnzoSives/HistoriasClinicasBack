@@ -16,7 +16,7 @@ public async getAll():Promise<Paciente[]>{
 
 public async getId(id:number) : Promise<Paciente>{
   try{
-    const criterio : FindOneOptions =  { where: {id:id} }
+    const criterio : FindOneOptions =  { where: {id_paciente:id} }
     let paciente : Paciente = await this.pacienteRepository.findOne( criterio );
     if(paciente)
       return paciente;
