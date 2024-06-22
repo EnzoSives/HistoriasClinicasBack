@@ -118,6 +118,11 @@ export class Paciente {
   @Column()
   examenFisicoPielAnexos: string;
 
+  @Column({ nullable: true })
+  imagen: string;
+  @Column({ nullable: true })
+  imagen2: string;
+
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
   fechaHoraInicioHistoriaClinica: Date;
 

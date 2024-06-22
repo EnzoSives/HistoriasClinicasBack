@@ -1,5 +1,4 @@
-// src/entities/consulta.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Paciente } from 'src/paciente/entities/paciente.entity';
 
 @Entity()
@@ -7,7 +6,7 @@ export class Consulta {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'datetime' })
+  @CreateDateColumn({ type: 'timestamp' })
   fechaHoraInicio: Date;
 
   @Column()
@@ -21,13 +20,10 @@ export class Consulta {
   paciente: Paciente;
 
   constructor(
-    fechaHoraInicio: Date= new Date(),
     motivoConsulta: string,
     observaciones: string
   ) {
-    this.fechaHoraInicio = fechaHoraInicio;
     this.motivoConsulta = motivoConsulta;
     this.observaciones = observaciones;
-    
   }
 }
