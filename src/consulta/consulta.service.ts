@@ -11,7 +11,7 @@ export class ConsultaService {
   constructor(
     @InjectRepository(Consulta) private consultaRepository: Repository<Consulta>,
     @InjectRepository(Paciente) private pacienteRepository: Repository<Paciente>
-  ) {}
+  ) { }
 
   public async getAll(): Promise<Consulta[]> {
     return await this.consultaRepository.find();

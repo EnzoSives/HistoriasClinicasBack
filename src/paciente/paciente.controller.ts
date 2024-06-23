@@ -6,14 +6,14 @@ import {
   Patch,
   Param,
   Delete,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { PacienteService } from './paciente.service';
 import { PacienteDto } from './dto/create-paciente.dto';
 import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { Paciente } from './entities/paciente.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'; // Importa Express
 
 @Controller('paciente')
@@ -21,12 +21,17 @@ export class PacienteController {
   constructor(private readonly pacienteService: PacienteService) { }
 
   @Post('crear')
-  @UseInterceptors(FileInterceptor('file')) // Añadir interceptor para manejo de archivos
+  @UseInterceptors(FilesInterceptor('files', 2)) // Añadir interceptor para manejo de múltiples archivos
   addDato(
     @Body() paciente: PacienteDto,
-    @UploadedFile() file: Express.Multer.File, // Recibir el archivo cargado
+    @UploadedFiles() files: Express.Multer.File[], // Recibir los archivos cargados
   ): Promise<Paciente> {
-    return this.pacienteService.addPacientes(paciente, file.filename, file.filename);
+    // Asegúrate de que se recibieron exactamente dos archivos
+    if (files.length !== 2) {
+      throw new Error('Se requieren exactamente dos archivos.');
+    }
+
+    return this.pacienteService.addPacientes(paciente, files[0].filename, files[1].filename);
   }
 
   @Get('all')
