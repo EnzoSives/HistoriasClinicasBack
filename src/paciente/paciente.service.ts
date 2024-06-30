@@ -71,6 +71,7 @@ export class PacienteService {
         pacienteDto.examenFisicoSistemaHematopoyetico,
         pacienteDto.examenFisicoSistemaMusculoEsqueletico,
         pacienteDto.examenFisicoPielAnexos,
+        pacienteDto.primerObservacion,
       );
 
       paciente.imagen = imagePath;

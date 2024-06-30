@@ -36,6 +36,7 @@ export class PacienteDto {
   readonly examenFisicoSistemaHematopoyetico: string;
   readonly examenFisicoSistemaMusculoEsqueletico: string;
   readonly examenFisicoPielAnexos: string;
+  readonly primerObservacion: string;
   readonly imagen?: string;
   readonly imagen2?: string;
 }

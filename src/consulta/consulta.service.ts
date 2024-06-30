@@ -62,7 +62,10 @@ export class ConsultaService {
     }
   }
 
-  public async updateConsultaId(id: number, consultaDto: Partial<ConsultaDto>): Promise<Consulta> {
+  public async updateConsultaId(
+    id: number,
+    consultaDto: Partial<ConsultaDto>,
+  ): Promise<Consulta> {
     try {
       const criterio: FindOneOptions<Consulta> = { where: { id: id } };
       let consulta: Consulta = await this.consultaRepository.findOne(criterio);

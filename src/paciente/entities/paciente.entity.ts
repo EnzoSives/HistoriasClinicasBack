@@ -118,6 +118,11 @@ export class Paciente {
   @Column()
   examenFisicoPielAnexos: string;
 
+  @Column({
+    length: 250,
+  })
+  primerObservacion: string;
+
   @Column({ nullable: true })
   imagen: string;
   @Column({ nullable: true })
@@ -167,6 +172,7 @@ export class Paciente {
     examenFisicoSistemaHematopoyetico: string,
     examenFisicoSistemaMusculoEsqueletico: string,
     examenFisicoPielAnexos: string,
+    primerObservacion: string
 
   ) {
     this.nombre = nombre;
@@ -206,5 +212,6 @@ export class Paciente {
     this.examenFisicoSistemaHematopoyetico = examenFisicoSistemaHematopoyetico;
     this.examenFisicoSistemaMusculoEsqueletico = examenFisicoSistemaMusculoEsqueletico;
     this.examenFisicoPielAnexos = examenFisicoPielAnexos;
+    this.primerObservacion = primerObservacion;
   }
 }
