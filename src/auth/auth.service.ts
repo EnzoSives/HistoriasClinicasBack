@@ -7,41 +7,41 @@ import * as bcrypt from 'bcrypt';
 
 
 @Injectable()
-export class AuthService{
+export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private jwtService: JwtService,
-    ){}
+    ) { }
 
     async register({ username, password, email }: registerDto) {
         const user = await this.usersService.findOneByEmail(email);
         if (user) {
-          throw new BadRequestException('El usuario ya existe');
+            throw new BadRequestException('El usuario ya existe');
         }
-      
+
         if (!password) {
-          throw new BadRequestException('La contraseña es requerida');
+            throw new BadRequestException('La contraseña es requerida');
         }
-      
+
         return await this.usersService.create({
-          username,
-          email,
-          password: await bcrypt.hash(password, 10)
+            username,
+            email,
+            password: await bcrypt.hash(password, 10)
         });
-      }
-    async login ({ email, password}: loginDto){
+    }
+    async login({ email, password }: loginDto) {
         const user = await this.usersService.findByEmailWithPassword(email);
-        if(!user){
+        if (!user) {
             throw new UnauthorizedException('email erroneo');
         }
         const isPasswordValid = await bcrypt.compare(password, user.password)
-        if (!isPasswordValid){
+        if (!isPasswordValid) {
             throw new UnauthorizedException('password incorrecto');
         }
-        const payload = {email: user.email};
+        const payload = { email: user.email };
         const access_token = await this.jwtService.signAsync(payload);
 
-        return{
+        return {
             access_token,
             email
         };

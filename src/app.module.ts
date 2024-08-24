@@ -21,14 +21,24 @@ import { AppService } from './app.service';
     // }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'bpeyvodevjsywngcdapn-mysql.services.clever-cloud.com',
+      host: '149.50.137.224',
       port: 3306,
-      username: 'u9ze4aydevqy5xtq',
-      password: 'h94pLnqUl02TqHdwAcQk',
-      database: 'b0f8arjbbobjpsje6bub',
+      username: 'baseDeEnzo',
+      password: 'Cristiano7',
+      database: 'hClinicas',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
+    // TypeOrmModule.forRoot({
+    //   type: 'mysql',
+    //   host: 'bpeyvodevjsywngcdapn-mysql.services.clever-cloud.com',
+    //   port: 3306,
+    //   username: 'u9ze4aydevqy5xtq',
+    //   password: 'h94pLnqUl02TqHdwAcQk',
+    //   database: 'b0f8arjbbobjpsje6bub',
+    //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
+    //   synchronize: true,
+    // }),
     UsersModule,
     PacienteModule,
     ConsultaModule,
@@ -37,4 +47,4 @@ import { AppService } from './app.service';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

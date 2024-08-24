@@ -1,12 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe, Res } from '@nestjs/common';
 import { ConsultaService } from './consulta.service';
 import { ConsultaDto } from './dto/create-consulta.dto';
 import { UpdateConsultaDto } from './dto/update-consulta.dto';
 import { Consulta } from './entities/consulta.entity';
+import { Response } from 'express';
+import { PdfService } from '../pdf/pdf.service';
 
 @Controller('consulta')
 export class ConsultaController {
-  constructor(private readonly consultaService: ConsultaService) {}
+  constructor(private readonly consultaService: ConsultaService, private readonly pdfService: PdfService,) {}
+
+  @Get('pdf')
+  async descargarPdf(@Res() res: Response) {
+    const consultas = await this.consultaService.getAll(); // Ajusta según tu método para obtener todas las consultas
+    const pdfBuffer = await this.pdfService.generarPdf(consultas);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=consultas.pdf',
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.end(pdfBuffer);
+  }
+
+  @Get('pdf/:pacienteId')
+  async descargarPdfPorPaciente(@Param('pacienteId') pacienteId: number, @Res() res: Response) {
+    const consultas = await this.consultaService.getConsultasByPacienteId(pacienteId);
+    const pdfBuffer = await this.pdfService.generarPdf(consultas);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=consultas_paciente_${pacienteId}.pdf`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.end(pdfBuffer);
+  }
 
 
   @Post('crear')
