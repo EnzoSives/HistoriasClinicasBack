@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'Api',
       script: 'npm',
-      args: 'run dev',
+      args: 'run start:prod',
       watch: true, // reiniciar automáticamente la aplicación al cambiar los archivos
       env: {
         NODE_ENV: 'development',
