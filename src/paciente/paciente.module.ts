@@ -6,7 +6,6 @@ import { PacienteService } from './paciente.service';
 import { PacienteController } from './paciente.controller';
 import { diskStorage } from 'multer';
 import path, { extname } from 'path';
-import os from 'os';  // Importa el módulo os
 
 @Module({
   imports: [
@@ -14,10 +13,7 @@ import os from 'os';  // Importa el módulo os
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
-          // Expande el `~` a la ruta completa del usuario
-          const homeDir = os.homedir();
-          const uploadPath = path.join(homeDir, 'App/HistoriasClinicasFront/public/uploads');
-          console.log(`Saving file to: ${uploadPath}`);  // Verificar la ruta generada
+          const uploadPath = 'C:/root/App/HistoriasClinicasFront/public/uploads';
           cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
