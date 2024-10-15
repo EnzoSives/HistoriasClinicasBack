@@ -13,7 +13,7 @@ import path, { extname } from 'path';
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const uploadPath = ' /home/historiasclinicas-mada/htdocs/historias-clinicas-mada.com/HistoriasClinicasBack';
+          const uploadPath = '/home/historiasclinicas-mada/htdocs/historias-clinicas-mada.com/HistoriasClinicasBack';
           cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
