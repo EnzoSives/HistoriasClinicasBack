@@ -7,132 +7,131 @@ export class Paciente {
   @PrimaryGeneratedColumn()
   id_paciente: number;
 
-  @Column()
-  nombre: string;
-
-  @Column()
-  apellido: string;
-
-  @Column()
-  dni: string;
-
-  @Column()
-  sexo: string;
-
-  @Column()
-  edad: number;
-
-  @Column({ type: 'date' })
-  fechaNacimiento: Date;
-
-  @Column()
-  lugarNacimiento: string;
-
-  @Column()
-  direccion: string;
-
-  @Column()
-  telefonoFijo: string;
-
-  @Column()
-  telefonoCelular: string;
-
-  @Column()
-  ocupacion: string;
-
-  @Column()
-  estadoCivil: string;
-
-  @Column()
-  obraSocial: string;
-
-  @Column()
-  afiliadoObraSocial: string;
-
-  @Column()
-  antecedentesPersonalesMedicos: string;
-
-  @Column()
-  antecedentesQuirurgicos: string;
-
-  @Column()
-  alergias: string;
-
-  @Column()
-  antecedentesHeredoFamiliares: string;
-
-  @Column()
-  habitosToxicos: string;
-
-  @Column()
-  medicacionHabitual: string;
-
-  @Column()
-  examenFisicoHabito: string;
-
-  @Column()
-  examenFisicoPeso: number;
-
-  @Column()
-  examenFisicoTalla: number;
-
-  @Column()
-  examenFisicoIMC: number;
-
-  @Column()
-  examenFisicoTA: string;
-
-  @Column()
-  examenFisicoFC: string;
-
-  @Column()
-  examenFisicoFR: string;
-
-  @Column()
-  examenFisicoTemperatura: string;
-
-  @Column()
-  examenFisicoSistemaNervioso: string;
-
-  @Column()
-  examenFisicoAPCardiovascular: string;
-
-  @Column()
-  examenFisicoAPRespiratorio: string;
-
-  @Column()
-  examenFisicoAPDigestivo: string;
-
-  @Column()
-  examenFisicoAPGenitourinario: string;
-
-  @Column()
-  examenFisicoSistemaEndocrino: string;
-
-  @Column()
-  examenFisicoSistemaHematopoyetico: string;
-
-  @Column()
-  examenFisicoSistemaMusculoEsqueletico: string;
-
-  @Column()
-  examenFisicoPielAnexos: string;
-
-  @Column({
-    length: 250,
-  })
-  primerObservacion: string;
+  @Column({ nullable: true })
+  nombre?: string;
 
   @Column({ nullable: true })
-  imagen: string;
+  apellido?: string;
+
   @Column({ nullable: true })
-  imagen2: string;
+  dni?: string;
+
+  @Column({ nullable: true })
+  sexo?: string;
+
+  @Column({ nullable: true })
+  edad?: number;
+
+  @Column({ type: 'date', nullable: true })
+  fechaNacimiento?: Date;
+
+  @Column({ nullable: true })
+  lugarNacimiento?: string;
+
+  @Column({ nullable: true })
+  direccion?: string;
+
+  @Column({ nullable: true })
+  telefonoFijo?: string;
+
+  @Column({ nullable: true })
+  telefonoCelular?: string;
+
+  @Column({ nullable: true })
+  ocupacion?: string;
+
+  @Column({ nullable: true })
+  estadoCivil?: string;
+
+  @Column({ nullable: true })
+  obraSocial?: string;
+
+  @Column({ nullable: true })
+  afiliadoObraSocial?: string;
+
+  @Column({ nullable: true })
+  antecedentesPersonalesMedicos?: string;
+
+  @Column({ nullable: true })
+  antecedentesQuirurgicos?: string;
+
+  @Column({ nullable: true })
+  alergias?: string;
+
+  @Column({ nullable: true })
+  antecedentesHeredoFamiliares?: string;
+
+  @Column({ nullable: true })
+  habitosToxicos?: string;
+
+  @Column({ nullable: true })
+  medicacionHabitual?: string;
+
+  @Column({ nullable: true })
+  examenFisicoHabito?: string;
+
+  @Column({ nullable: true })
+  examenFisicoPeso?: number;
+
+  @Column({ nullable: true })
+  examenFisicoTalla?: number;
+
+  @Column({ nullable: true })
+  examenFisicoIMC?: number;
+
+  @Column({ nullable: true })
+  examenFisicoTA?: string;
+
+  @Column({ nullable: true })
+  examenFisicoFC?: string;
+
+  @Column({ nullable: true })
+  examenFisicoFR?: string;
+
+  @Column({ nullable: true })
+  examenFisicoTemperatura?: string;
+
+  @Column({ nullable: true })
+  examenFisicoSistemaNervioso?: string;
+
+  @Column({ nullable: true })
+  examenFisicoAPCardiovascular?: string;
+
+  @Column({ nullable: true })
+  examenFisicoAPRespiratorio?: string;
+
+  @Column({ nullable: true })
+  examenFisicoAPDigestivo?: string;
+
+  @Column({ nullable: true })
+  examenFisicoAPGenitourinario?: string;
+
+  @Column({ nullable: true })
+  examenFisicoSistemaEndocrino?: string;
+
+  @Column({ nullable: true })
+  examenFisicoSistemaHematopoyetico?: string;
+
+  @Column({ nullable: true })
+  examenFisicoSistemaMusculoEsqueletico?: string;
+
+  @Column({ nullable: true })
+  examenFisicoPielAnexos?: string;
+
+  @Column({ length: 250, nullable: true })
+  primerObservacion?: string;
+
+  @Column({ nullable: true })
+  imagen?: string;
+
+  @Column({ nullable: true })
+  imagen2?: string;
 
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
-  fechaHoraInicioHistoriaClinica: Date;
+  fechaHoraInicioHistoriaClinica?: Date;
 
   @OneToMany(() => Consulta, consulta => consulta.paciente)
-  consultas: Consulta[];
+  consultas?: Consulta[];
 
   constructor(
     nombre: string,
