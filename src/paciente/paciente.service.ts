@@ -30,7 +30,7 @@ export class PacienteService {
       )
     }
   }
-
+  
   public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string): Promise<Paciente> {
     try {
       let paciente: Paciente = new Paciente(
@@ -91,7 +91,7 @@ export class PacienteService {
 
   public async updatePacienteId(id: number, pacienteDto: Partial<PacienteDto>): Promise<Paciente> {
     try {
-      const criterio: FindOneOptions = { where: { id: id } };
+      const criterio: FindOneOptions = { where: { id_paciente: id } };
       let paciente: Paciente = await this.pacienteRepository.findOne(criterio);
 
       if (paciente) {
@@ -113,7 +113,7 @@ export class PacienteService {
 
   public async deletePaciente(id: number): Promise<boolean> {
     try {
-      let criterio: FindOneOptions = { where: { id: id } };
+      let criterio: FindOneOptions = { where: { id_paciente: id } };
       let paciente: Paciente = await this.pacienteRepository.findOne(criterio);
       if (!paciente)
         throw new Error(`No se pudo actualizar eliminar`)

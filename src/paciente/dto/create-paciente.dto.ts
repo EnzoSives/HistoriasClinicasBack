@@ -1,42 +1,84 @@
+import { IsOptional } from "class-validator";
+
 export class PacienteDto {
-  readonly nombre: string;
-  readonly apellido: string;
-  readonly dni: string;
-  readonly sexo: string;
-  readonly edad: number;
-  readonly fechaNacimiento: Date;
-  readonly lugarNacimiento: string;
-  readonly direccion: string;
-  readonly telefonoFijo: string;
-  readonly telefonoCelular: string;
-  readonly ocupacion: string;
-  readonly estadoCivil: string;
-  readonly obraSocial: string;
-  readonly afiliadoObraSocial: string;
-  readonly antecedentesPersonalesMedicos: string;
-  readonly antecedentesQuirurgicos: string;
-  readonly alergias: string;
-  readonly antecedentesHeredoFamiliares: string;
-  readonly habitosToxicos: string;
-  readonly medicacionHabitual: string;
-  readonly examenFisicoHabito: string;
-  readonly examenFisicoPeso: number;
-  readonly examenFisicoTalla: number;
-  readonly examenFisicoIMC: number;
-  readonly examenFisicoTA: string;
-  readonly examenFisicoFC: string;
-  readonly examenFisicoFR: string;
-  readonly examenFisicoTemperatura: string;
-  readonly examenFisicoSistemaNervioso: string;
-  readonly examenFisicoAPCardiovascular: string;
-  readonly examenFisicoAPRespiratorio: string;
-  readonly examenFisicoAPDigestivo: string;
-  readonly examenFisicoAPGenitourinario: string;
-  readonly examenFisicoSistemaEndocrino: string;
-  readonly examenFisicoSistemaHematopoyetico: string;
-  readonly examenFisicoSistemaMusculoEsqueletico: string;
-  readonly examenFisicoPielAnexos: string;
-  readonly primerObservacion: string;
+  @IsOptional()
+  readonly nombre?: string;
+  @IsOptional()
+  readonly apellido?: string;
+  @IsOptional()
+  readonly dni?: string;
+  @IsOptional()
+  readonly sexo?: string;
+  @IsOptional()
+  readonly edad?: number;
+  @IsOptional()
+  readonly fechaNacimiento?: Date;
+  @IsOptional()
+  readonly lugarNacimiento?: string;
+  @IsOptional()
+  readonly direccion?: string;
+  @IsOptional()
+  readonly telefonoFijo?: string;
+  @IsOptional()
+  readonly telefonoCelular?: string;
+  @IsOptional()
+  readonly ocupacion?: string;
+  @IsOptional()
+  readonly estadoCivil?: string;
+  @IsOptional()
+  readonly obraSocial?: string;
+  @IsOptional()
+  readonly afiliadoObraSocial?: string;
+  @IsOptional()
+  readonly antecedentesPersonalesMedicos?: string;
+  @IsOptional()
+  readonly antecedentesQuirurgicos?: string;
+  @IsOptional()
+  readonly alergias?: string;
+  @IsOptional()
+  readonly antecedentesHeredoFamiliares?: string;
+  @IsOptional()
+  readonly habitosToxicos?: string;
+  @IsOptional()
+  readonly medicacionHabitual?: string;
+  @IsOptional()
+  readonly examenFisicoHabito?: string;
+  @IsOptional()
+  readonly examenFisicoPeso?: number;
+  @IsOptional()
+  readonly examenFisicoTalla?: number;
+  @IsOptional()
+  readonly examenFisicoIMC?: number;
+  @IsOptional()
+  readonly examenFisicoTA?: string;
+  @IsOptional()
+  readonly examenFisicoFC?: string;
+  @IsOptional()
+  readonly examenFisicoFR?: string;
+  @IsOptional()
+  readonly examenFisicoTemperatura?: string;
+  @IsOptional()
+  readonly examenFisicoSistemaNervioso?: string;
+  @IsOptional()
+  readonly examenFisicoAPCardiovascular?: string;
+  @IsOptional()
+  readonly examenFisicoAPRespiratorio?: string;
+  @IsOptional()
+  readonly examenFisicoAPDigestivo?: string;
+  @IsOptional()
+  readonly examenFisicoAPGenitourinario?: string;
+  @IsOptional()
+  readonly examenFisicoSistemaEndocrino?: string;
+  @IsOptional()
+  readonly examenFisicoSistemaHematopoyetico?: string;
+  @IsOptional()
+  readonly examenFisicoSistemaMusculoEsqueletico?: string;
+  @IsOptional()
+  readonly examenFisicoPielAnexos?: string; 
+  @IsOptional()
+  readonly primerObservacion?: string;
+  @IsOptional()
   readonly imagen?: string;
+  @IsOptional()
   readonly imagen2?: string;
 }

@@ -11,10 +11,10 @@ import {
 } from '@nestjs/common';
 import { PacienteService } from './paciente.service';
 import { PacienteDto } from './dto/create-paciente.dto';
-import { UpdatePacienteDto } from './dto/update-paciente.dto';
+
 import { Paciente } from './entities/paciente.entity';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express'; // Importa Express
+
 
 @Controller('paciente')
 export class PacienteController {
@@ -26,13 +26,13 @@ export class PacienteController {
     @Body() paciente: PacienteDto,
     @UploadedFiles() files: Express.Multer.File[], // Recibir los archivos cargados
   ): Promise<Paciente> {
-    // Asegúrate de que se recibieron exactamente dos archivos
-    if (files.length !== 2) {
-      throw new Error('Se requieren exactamente dos archivos.');
-    }
-
-    return this.pacienteService.addPacientes(paciente, files[0].filename, files[1].filename);
+    // Si no se reciben archivos o se recibe un número menor de los esperados, asignar "Sin Imagen"
+    const imagen1 = files[0]?.filename || 'Sin Imagen';
+    const imagen2 = files[1]?.filename || 'Sin Imagen';
+  
+    return this.pacienteService.addPacientes(paciente, imagen1, imagen2);
   }
+  
 
   @Get('all')
   async getPacientes(): Promise<Paciente[]> {
@@ -56,4 +56,5 @@ export class PacienteController {
   deleteDato(@Param('id') id: number): Promise<boolean> {
     return this.pacienteService.deletePaciente(id);
   }
+  
 }
