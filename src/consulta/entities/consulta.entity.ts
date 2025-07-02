@@ -1,33 +1,54 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
-} from 'typeorm';
+// src/consulta/entities/consulta.entity.ts (ACTUALIZADA para incluir relación con médico)
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Paciente } from 'src/paciente/entities/paciente.entity';
+import { Medico } from 'src/medico/entities/medico.entity';
 
 @Entity()
 export class Consulta {
   @PrimaryGeneratedColumn()
-  id: number;
+  id_consulta: number;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  fechaHoraInicio: Date;
+  @Column({ type: 'date' })
+  fechaConsulta: Date;
 
-  @Column()
-  motivoConsulta: string;
+  @Column({ type: 'text', nullable: true })
+  motivoConsulta?: string;
 
-  @Column()
-  observaciones: string;
+  @Column({ type: 'text', nullable: true })
+  anamnesis?: string;
 
-  @ManyToOne(() => Paciente, (paciente) => paciente.consultas)
+  @Column({ type: 'text', nullable: true })
+  examenFisico?: string;
+
+  @Column({ type: 'text', nullable: true })
+  diagnostico?: string;
+
+  @Column({ type: 'text', nullable: true })
+  tratamiento?: string;
+
+  @Column({ type: 'text', nullable: true })
+  observaciones?: string;
+
+  @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+  fechaCreacion: Date;
+
+  // Relación con Paciente
+  @ManyToOne(() => Paciente, paciente => paciente.consultas, { 
+    nullable: false 
+  })
   @JoinColumn({ name: 'id_paciente' })
   paciente: Paciente;
 
-  constructor(motivoConsulta: string, observaciones: string) {
-    this.motivoConsulta = motivoConsulta;
-    this.observaciones = observaciones;
-  }
+  @Column()
+  id_paciente: number;
+
+  // Relación con Médico
+  @ManyToOne(() => Medico, medico => medico.consultas, { 
+    nullable: false 
+  })
+  @JoinColumn({ name: 'id_medico' })
+  medico: Medico;
+
+  @Column()
+  id_medico: number;
 }

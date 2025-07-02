@@ -19,7 +19,7 @@ export class ConsultaService {
 
   public async getId(id: number): Promise<Consulta> {
     try {
-      const criterio: FindOneOptions<Consulta> = { where: { id: id } };
+      const criterio: FindOneOptions<Consulta> = { where: { id_consulta: id } };
       let consulta: Consulta = await this.consultaRepository.findOne(criterio);
       if (consulta) return consulta;
       else throw new Error(`No se encontró consulta con id: ${id}`);
@@ -42,10 +42,9 @@ export class ConsultaService {
       }
 
       // Crear una nueva instancia de Consulta y asignar los valores del DTO
-      let consulta = new Consulta(
-        consultaDto.motivoConsulta,
-        consultaDto.observaciones
-      );
+      let consulta = new Consulta();
+      consulta.motivoConsulta = consultaDto.motivoConsulta;
+      consulta.observaciones = consultaDto.observaciones;
 
       // Asignar el paciente a la consulta
       consulta.paciente = paciente;
@@ -67,7 +66,7 @@ export class ConsultaService {
     consultaDto: Partial<ConsultaDto>,
   ): Promise<Consulta> {
     try {
-      const criterio: FindOneOptions<Consulta> = { where: { id: id } };
+      const criterio: FindOneOptions<Consulta> = { where: { id_consulta: id } };
       let consulta: Consulta = await this.consultaRepository.findOne(criterio);
 
       if (consulta) {
@@ -87,7 +86,7 @@ export class ConsultaService {
 
   public async deleteconsulta(id: number): Promise<boolean> {
     try {
-      const criterio: FindOneOptions<Consulta> = { where: { id: id } };
+      const criterio: FindOneOptions<Consulta> = { where: { id_consulta: id } };
       let consulta: Consulta = await this.consultaRepository.findOne(criterio);
 
       if (!consulta) {

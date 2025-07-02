@@ -1,6 +1,51 @@
-// src/entities/paciente.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
+// src/entities/paciente.entity.ts (ACTUALIZADA)
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, ManyToOne, JoinColumn, UpdateDateColumn } from 'typeorm';
 import { Consulta } from 'src/consulta/entities/consulta.entity';
+import { Medico } from 'src/medico/entities/medico.entity';
+
+export interface DatosPaciente {
+  nombre?: string;
+  apellido?: string;
+  dni?: string;
+  sexo?: string;
+  edad?: number;
+  fechaNacimiento?: Date;
+  lugarNacimiento?: string;
+  direccion?: string;
+  telefonoFijo?: string;
+  telefonoCelular?: string;
+  ocupacion?: string;
+  estadoCivil?: string;
+  obraSocial?: string;
+  afiliadoObraSocial?: string;
+  antecedentesPersonalesMedicos?: string;
+  antecedentesQuirurgicos?: string;
+  alergias?: string;
+  antecedentesHeredoFamiliares?: string;
+  habitosToxicos?: string;
+  medicacionHabitual?: string;
+  examenFisicoHabito?: string;
+  examenFisicoPeso?: number;
+  examenFisicoTalla?: number;
+  examenFisicoIMC?: number;
+  examenFisicoTA?: string;
+  examenFisicoFC?: string;
+  examenFisicoFR?: string;
+  examenFisicoTemperatura?: string;
+  examenFisicoSistemaNervioso?: string;
+  examenFisicoAPCardiovascular?: string;
+  examenFisicoAPRespiratorio?: string;
+  examenFisicoAPDigestivo?: string;
+  examenFisicoAPGenitourinario?: string;
+  examenFisicoSistemaEndocrino?: string;
+  examenFisicoSistemaHematopoyetico?: string;
+  examenFisicoSistemaMusculoEsqueletico?: string;
+  examenFisicoPielAnexos?: string;
+  primerObservacion?: string;
+  imagen?: string;
+  imagen2?: string;
+  activo?: boolean;
+}
 
 @Entity()
 export class Paciente {
@@ -49,34 +94,34 @@ export class Paciente {
   @Column({ nullable: true })
   afiliadoObraSocial?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   antecedentesPersonalesMedicos?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   antecedentesQuirurgicos?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   alergias?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   antecedentesHeredoFamiliares?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   habitosToxicos?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   medicacionHabitual?: string;
 
   @Column({ nullable: true })
   examenFisicoHabito?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   examenFisicoPeso?: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   examenFisicoTalla?: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   examenFisicoIMC?: number;
 
   @Column({ nullable: true })
@@ -91,31 +136,31 @@ export class Paciente {
   @Column({ nullable: true })
   examenFisicoTemperatura?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoSistemaNervioso?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoAPCardiovascular?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoAPRespiratorio?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoAPDigestivo?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoAPGenitourinario?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoSistemaEndocrino?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoSistemaHematopoyetico?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoSistemaMusculoEsqueletico?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   examenFisicoPielAnexos?: string;
 
   @Column({ length: 250, nullable: true })
@@ -127,90 +172,96 @@ export class Paciente {
   @Column({ nullable: true })
   imagen2?: string;
 
+  @Column({ default: true })
+  activo: boolean;
+
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
-  fechaHoraInicioHistoriaClinica?: Date;
+  fechaHoraInicioHistoriaClinica: Date;
 
-  @OneToMany(() => Consulta, consulta => consulta.paciente)
-  consultas?: Consulta[];
+  @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+  fechaActualizacion: Date;
 
-  constructor(
-    nombre: string,
-    apellido: string,
-    dni: string,
-    sexo: string,
-    edad: number,
-    fechaNacimiento: Date,
-    lugarNacimiento: string,
-    direccion: string,
-    telefonoFijo: string,
-    telefonoCelular: string,
-    ocupacion: string,
-    estadoCivil: string,
-    obraSocial: string,
-    afiliadoObraSocial: string,
-    antecedentesPersonalesMedicos: string,
-    antecedentesQuirurgicos: string,
-    alergias: string,
-    antecedentesHeredoFamiliares: string,
-    habitosToxicos: string,
-    medicacionHabitual: string,
-    examenFisicoHabito: string,
-    examenFisicoPeso: number,
-    examenFisicoTalla: number,
-    examenFisicoIMC: number,
-    examenFisicoTA: string,
-    examenFisicoFC: string,
-    examenFisicoFR: string,
-    examenFisicoTemperatura: string,
-    examenFisicoSistemaNervioso: string,
-    examenFisicoAPCardiovascular: string,
-    examenFisicoAPRespiratorio: string,
-    examenFisicoAPDigestivo: string,
-    examenFisicoAPGenitourinario: string,
-    examenFisicoSistemaEndocrino: string,
-    examenFisicoSistemaHematopoyetico: string,
-    examenFisicoSistemaMusculoEsqueletico: string,
-    examenFisicoPielAnexos: string,
-    primerObservacion: string
+  // RELACIÓN CON MÉDICO - NUEVA
+  @ManyToOne(() => Medico, medico => medico.pacientes, { 
+    nullable: false,
+    eager: false 
+  })
+  @JoinColumn({ name: 'id_medico' })
+  medico: Medico;
 
-  ) {
-    this.nombre = nombre;
-    this.apellido = apellido;
-    this.dni = dni;
-    this.sexo = sexo;
-    this.edad = edad;
-    this.fechaNacimiento = fechaNacimiento;
-    this.lugarNacimiento = lugarNacimiento;
-    this.direccion = direccion;
-    this.telefonoFijo = telefonoFijo;
-    this.telefonoCelular = telefonoCelular;
-    this.ocupacion = ocupacion;
-    this.estadoCivil = estadoCivil;
-    this.obraSocial = obraSocial;
-    this.afiliadoObraSocial = afiliadoObraSocial;
-    this.antecedentesPersonalesMedicos = antecedentesPersonalesMedicos;
-    this.antecedentesQuirurgicos = antecedentesQuirurgicos;
-    this.alergias = alergias;
-    this.antecedentesHeredoFamiliares = antecedentesHeredoFamiliares;
-    this.habitosToxicos = habitosToxicos;
-    this.medicacionHabitual = medicacionHabitual;
-    this.examenFisicoHabito = examenFisicoHabito;
-    this.examenFisicoPeso = examenFisicoPeso;
-    this.examenFisicoTalla = examenFisicoTalla;
-    this.examenFisicoIMC = examenFisicoIMC;
-    this.examenFisicoTA = examenFisicoTA;
-    this.examenFisicoFC = examenFisicoFC;
-    this.examenFisicoFR = examenFisicoFR;
-    this.examenFisicoTemperatura = examenFisicoTemperatura;
-    this.examenFisicoSistemaNervioso = examenFisicoSistemaNervioso;
-    this.examenFisicoAPCardiovascular = examenFisicoAPCardiovascular;
-    this.examenFisicoAPRespiratorio = examenFisicoAPRespiratorio;
-    this.examenFisicoAPDigestivo = examenFisicoAPDigestivo;
-    this.examenFisicoAPGenitourinario = examenFisicoAPGenitourinario;
-    this.examenFisicoSistemaEndocrino = examenFisicoSistemaEndocrino;
-    this.examenFisicoSistemaHematopoyetico = examenFisicoSistemaHematopoyetico;
-    this.examenFisicoSistemaMusculoEsqueletico = examenFisicoSistemaMusculoEsqueletico;
-    this.examenFisicoPielAnexos = examenFisicoPielAnexos;
-    this.primerObservacion = primerObservacion;
+  @Column()
+  id_medico: number; // Foreign key
+
+  @OneToMany(() => Consulta, consulta => consulta.paciente, { 
+    cascade: true,
+    eager: false 
+  })
+  consultas: Consulta[];
+
+  // Constructor
+  constructor(datos?: Partial<DatosPaciente>) {
+    if (datos) {
+      Object.assign(this, datos);
+    }
+  }
+
+  // Métodos de utilidad
+  get nombreCompleto(): string {
+    return `${this.nombre || ''} ${this.apellido || ''}`.trim();
+  }
+
+  get telefonoPreferido(): string {
+    return this.telefonoCelular || this.telefonoFijo || '';
+  }
+
+  // Método para calcular IMC automáticamente
+  calcularIMC(): number | null {
+    if (this.examenFisicoPeso && this.examenFisicoTalla) {
+      const tallaEnMetros = this.examenFisicoTalla / 100;
+      const imc = this.examenFisicoPeso / (tallaEnMetros * tallaEnMetros);
+      this.examenFisicoIMC = Math.round(imc * 100) / 100;
+      return this.examenFisicoIMC;
+    }
+    return null;
+  }
+
+  // Método para validar datos básicos
+  validarDatosBasicos(): boolean {
+    return !!(this.nombre && this.apellido && this.dni);
+  }
+
+  // Método para obtener edad calculada
+  get edadCalculada(): number | null {
+    if (this.fechaNacimiento) {
+      const hoy = new Date();
+      const nacimiento = new Date(this.fechaNacimiento);
+      let edad = hoy.getFullYear() - nacimiento.getFullYear();
+      const mes = hoy.getMonth() - nacimiento.getMonth();
+      
+      if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+        edad--;
+      }
+      
+      return edad;
+    }
+    return this.edad || null;
+  }
+
+  // Método para desactivar paciente (soft delete)
+  desactivar(): void {
+    this.activo = false;
+  }
+
+  // Método para reactivar paciente
+  reactivar(): void {
+    this.activo = true;
+  }
+
+  // Obtener última consulta
+  get ultimaConsulta(): Date | null {
+    if (!this.consultas || this.consultas.length === 0) return null;
+    
+    const fechas = this.consultas.map(c => new Date(c.fechaConsulta));
+    return new Date(Math.max(...fechas.map(f => f.getTime())));
   }
 }

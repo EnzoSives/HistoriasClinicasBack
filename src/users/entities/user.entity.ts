@@ -1,31 +1,64 @@
-// import { IsEnum } from "class-validator";
-// import { Role } from "src/common/enum/rol.enum";
-import { Entity, PrimaryGeneratedColumn, Column, DeleteDateColumn } from "typeorm"
+// src/entities/user.entity.ts (MEJORADA)
+import { IsEnum } from "class-validator";
+import { Entity, PrimaryGeneratedColumn, Column, DeleteDateColumn, OneToOne, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Medico } from 'src/medico/entities/medico.entity';
+import { Role } from "src/common/enum/rol.enum";
 
 @Entity()
-export class User{
-
+export class User {
     @PrimaryGeneratedColumn()
-    id:number;
+    id: number;
+
+    @Column({ unique: true })
+    username: string;
 
     @Column()
-    username:string;
+    password: string;
 
-    @Column()
-    password:string;
-
-    @Column()
+    @Column({ unique: true })
     email: string;
 
-    // @IsEnum(Role) // Assuming Rol is an Enum
-    // role: Role;
+    @IsEnum(Role)
+    @Column({
+        type: "enum",
+        enum: Role,
+        default: Role.MEDICO // Asumiendo que Role.MEDICO existe
+    })
+    role: Role;
+
+    @Column({ default: true })
+    isActive: boolean;
+
+    @Column({ nullable: true })
+    lastLogin?: Date;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @DeleteDateColumn()
-    deleteAt: Date;
+    deleteAt?: Date;
 
-    constructor(username:string, password:string, email:string){
-        this.username = username;
-        this.password = password;
-        this.email = email;
+    // Relación OneToOne con Medico
+    @OneToOne(() => Medico, medico => medico.user, { 
+        cascade: true,
+        eager: false 
+    })
+    medico?: Medico;
+
+
+    // Métodos de utilidad
+    updateLastLogin(): void {
+        this.lastLogin = new Date();
+    }
+
+    deactivate(): void {
+        this.isActive = false;
+    }
+
+    activate(): void {
+        this.isActive = true;
     }
 }

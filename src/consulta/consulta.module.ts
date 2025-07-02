@@ -6,9 +6,10 @@ import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { Paciente } from 'src/paciente/entities/paciente.entity';
 import { PdfService } from 'src/pdf/pdf.service';
 import { PacienteService } from 'src/paciente/paciente.service';
+import { Medico } from 'src/medico/entities/medico.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Consulta, Paciente])],
+  imports:[TypeOrmModule.forFeature([Consulta, Paciente, Medico])],
   controllers: [ConsultaController],
   providers: [ConsultaService, PdfService, PacienteService],
 })

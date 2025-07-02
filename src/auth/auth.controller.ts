@@ -1,38 +1,40 @@
-import { Controller, Post, Body, Get, Request, UseGuards, InternalServerErrorException, NotFoundException, Query } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { loginDto } from "./dto/login.dto";
-import { registerDto } from "./dto/register.dto";
-
+// src/auth/auth.controller.ts (ACTUALIZADO)
+import { Controller, Post, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
+import { AuthService, RegisterMedicoDto } from './auth.service';
+import { User } from 'src/users/entities/user.entity';
+import { Medico } from 'src/medico/entities/medico.entity';
+// import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(private authService: AuthService) {}
 
     @Post('register')
-    register(@Body() registerDto: registerDto) {
+    async register(@Body() registerDto: RegisterMedicoDto) {
         return this.authService.register(registerDto);
     }
 
     @Post('login')
-    login(@Body() loginDto: loginDto) {
-        return this.authService.login(loginDto)
+    async login(@Body() loginDto: { username: string; password: string }) {
+        return this.authService.login(loginDto.username, loginDto.password);
     }
 
-    @Get('user')
-    async getUser(@Query('email') email: string) {
-        try {
-            const decodedEmail = decodeURIComponent(email); // Decodifica el email
-            const user = await this.authService.findUserByEmail(decodedEmail);
+    // @UseGuards(JwtAuthGuard)
+    @Get('profile')
+    async getProfile(@Request() req: any) {
+        return this.authService.obtenerPerfilCompleto(req.user.id);
+    }
 
-            if (user) {
-                return { user };
-            } else {
-                throw new NotFoundException('Usuario no encontrado');
-            }
-        } catch (error) {
-            console.error('Error al encontrar el usuario:', error);
-            throw new InternalServerErrorException('Error interno del servidor');
-        }
+    // @UseGuards(JwtAuthGuard)
+    @Put('profile')
+    async updateProfile(
+        @Request() req: any,
+        @Body() updateDto: { user?: Partial<User>; medico?: Partial<Medico> }
+    ) {
+        return this.authService.actualizarPerfil(
+            req.user.id,
+            updateDto.user || {},
+            updateDto.medico
+        );
     }
 }
-

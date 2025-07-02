@@ -33,46 +33,8 @@ export class PacienteService {
   
   public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string): Promise<Paciente> {
     try {
-      let paciente: Paciente = new Paciente(
-        pacienteDto.nombre,
-        pacienteDto.apellido,
-        pacienteDto.dni,
-        pacienteDto.sexo,
-        pacienteDto.edad,
-        pacienteDto.fechaNacimiento,
-        pacienteDto.lugarNacimiento,
-        pacienteDto.direccion,
-        pacienteDto.telefonoFijo,
-        pacienteDto.telefonoCelular,
-        pacienteDto.ocupacion,
-        pacienteDto.estadoCivil,
-        pacienteDto.obraSocial,
-        pacienteDto.afiliadoObraSocial,
-        pacienteDto.antecedentesPersonalesMedicos,
-        pacienteDto.antecedentesQuirurgicos,
-        pacienteDto.alergias,
-        pacienteDto.antecedentesHeredoFamiliares,
-        pacienteDto.habitosToxicos,
-        pacienteDto.medicacionHabitual,
-        pacienteDto.examenFisicoHabito,
-        pacienteDto.examenFisicoPeso,
-        pacienteDto.examenFisicoTalla,
-        pacienteDto.examenFisicoIMC,
-        pacienteDto.examenFisicoTA,
-        pacienteDto.examenFisicoFC,
-        pacienteDto.examenFisicoFR,
-        pacienteDto.examenFisicoTemperatura,
-        pacienteDto.examenFisicoSistemaNervioso,
-        pacienteDto.examenFisicoAPCardiovascular,
-        pacienteDto.examenFisicoAPRespiratorio,
-        pacienteDto.examenFisicoAPDigestivo,
-        pacienteDto.examenFisicoAPGenitourinario,
-        pacienteDto.examenFisicoSistemaEndocrino,
-        pacienteDto.examenFisicoSistemaHematopoyetico,
-        pacienteDto.examenFisicoSistemaMusculoEsqueletico,
-        pacienteDto.examenFisicoPielAnexos,
-        pacienteDto.primerObservacion,
-      );
+      let paciente: Paciente = new Paciente();
+      Object.assign(paciente, pacienteDto);
 
       paciente.imagen = imagePath;
       paciente.imagen2 = imagePath2;

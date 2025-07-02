@@ -91,7 +91,7 @@ export class PdfService {
         yPosition += 7;
 
         doc.setFontSize(fontSize);
-        doc.text(`Fecha y Hora: ${this.formatearFechaHora(consulta.fechaHoraInicio)}`, margin, yPosition);
+        doc.text(`Fecha y Hora: ${this.formatearFechaHora(consulta.fechaConsulta)}`, margin, yPosition);
         yPosition += 7;
 
         doc.text(`Motivo: ${consulta.motivoConsulta}`, margin, yPosition);
