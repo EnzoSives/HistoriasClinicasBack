@@ -31,13 +31,14 @@ export class PacienteService {
     }
   }
   
-  public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string): Promise<Paciente> {
+  public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string, id_medico: number): Promise<Paciente> {
     try {
       let paciente: Paciente = new Paciente();
       Object.assign(paciente, pacienteDto);
 
       paciente.imagen = imagePath;
       paciente.imagen2 = imagePath2;
+      paciente.id_medico = id_medico; // Asigna el ID del médico
 
       paciente = await this.pacienteRepository.save(paciente);
       if (paciente) return paciente;

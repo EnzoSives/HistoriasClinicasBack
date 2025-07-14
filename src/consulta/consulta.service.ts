@@ -31,35 +31,32 @@ export class ConsultaService {
     }
   }
 
-  public async addConsulta(consultaDto: ConsultaDto): Promise<Consulta> {
+ public async addConsulta(consultaDto: ConsultaDto, id_medico: number): Promise<Consulta> {
     try {
-      const pacienteId = consultaDto.id_paciente;
+        const pacienteId = consultaDto.id_paciente;
 
-      // Verificar si el paciente existe
-      const paciente = await this.pacienteRepository.findOne({ where: { id_paciente: pacienteId } });
-      if (!paciente) {
-        throw new Error(`El paciente con id: ${pacienteId} no existe`);
-      }
+        const paciente = await this.pacienteRepository.findOne({ where: { id_paciente: pacienteId } });
+        if (!paciente) {
+            throw new Error(`El paciente con id: ${pacienteId} no existe`);
+        }
 
-      // Crear una nueva instancia de Consulta y asignar los valores del DTO
-      let consulta = new Consulta();
-      consulta.motivoConsulta = consultaDto.motivoConsulta;
-      consulta.observaciones = consultaDto.observaciones;
+        let consulta = new Consulta();
+        consulta.motivoConsulta = consultaDto.motivoConsulta;
+        consulta.observaciones = consultaDto.observaciones;
+        consulta.fechaConsulta = consultaDto.fechaConsulta; // Asigna la fecha de la consulta
+        consulta.paciente = paciente;
+        consulta.id_medico = id_medico;
 
-      // Asignar el paciente a la consulta
-      consulta.paciente = paciente;
+        consulta = await this.consultaRepository.save(consulta);
 
-      // Guardar la consulta en la base de datos
-      consulta = await this.consultaRepository.save(consulta);
-
-      return consulta;
+        return consulta;
     } catch (error) {
-      throw new HttpException(
-        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error },
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+        throw new HttpException(
+            { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error },
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
-  }
+}
 
   public async updateConsultaId(
     id: number,
