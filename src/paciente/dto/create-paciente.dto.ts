@@ -81,4 +81,5 @@ export class PacienteDto {
   readonly imagen?: string;
   @IsOptional()
   readonly imagen2?: string;
+  readonly id_medico?: number; // Asegúrate de que este campo sea opcional si no siempre se proporciona
 }

@@ -31,26 +31,43 @@ export class PacienteService {
     }
   }
   
-  public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string, id_medico: number): Promise<Paciente> {
+   public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string, id_medico: number): Promise<Paciente> {
     try {
       let paciente: Paciente = new Paciente();
       Object.assign(paciente, pacienteDto);
 
+      // --- INICIO DE LA MODIFICACIÓN CLAVE PARA FECHA ---
+      if (pacienteDto.fechaNacimiento) {
+        const parsedDate = new Date(pacienteDto.fechaNacimiento);
+        // Validar si la fecha es un objeto de fecha válido
+        if (isNaN(parsedDate.getTime())) {
+            throw new Error('Formato de fecha de nacimiento inválido.');
+        }
+        // Formatear a 'YYYY-MM-DD' para la columna DATE de MySQL
+        const year = parsedDate.getFullYear();
+        const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0'); // Meses son de 0-11
+        const day = parsedDate.getDate().toString().padStart(2, '0');
+        paciente.fechaNacimiento = `${year}-${month}-${day}` as any; // Se usa 'as any' para compatibilidad de tipo temporal
+      } else {
+          paciente.fechaNacimiento = undefined; // Asegurarse de que sea undefined si no se provee
+      }
+      // --- FIN DE LA MODIFICACIÓN CLAVE PARA FECHA ---
+
       paciente.imagen = imagePath;
       paciente.imagen2 = imagePath2;
-      paciente.id_medico = id_medico; // Asigna el ID del médico
+      paciente.id_medico = id_medico;
 
       paciente = await this.pacienteRepository.save(paciente);
       if (paciente) return paciente;
       else throw new Error(`No se pudo agregar los datos`);
     } catch (error) {
+      // Cambiado a INTERNAL_SERVER_ERROR ya que es un error de procesamiento del servidor
       throw new HttpException(
-        { status: HttpStatus.NOT_FOUND, error: `500 - ERROR: ` + error },
-        HttpStatus.NOT_FOUND,
+        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
-
 
   public async updatePacienteId(id: number, pacienteDto: Partial<PacienteDto>): Promise<Paciente> {
     try {
@@ -58,8 +75,22 @@ export class PacienteService {
       let paciente: Paciente = await this.pacienteRepository.findOne(criterio);
 
       if (paciente) {
-        // Actualizar solo los campos proporcionados en datoDto
         Object.assign(paciente, pacienteDto);
+
+        // --- INICIO DE LA MODIFICACIÓN CLAVE PARA FECHA EN UPDATE ---
+        if (pacienteDto.fechaNacimiento) {
+            const parsedDate = new Date(pacienteDto.fechaNacimiento);
+            if (isNaN(parsedDate.getTime())) {
+                throw new Error('Formato de fecha de nacimiento inválido.');
+            }
+            const year = parsedDate.getFullYear();
+            const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
+            const day = parsedDate.getDate().toString().padStart(2, '0');
+            paciente.fechaNacimiento = `${year}-${month}-${day}` as any;
+        } else if (Object.prototype.hasOwnProperty.call(pacienteDto, 'fechaNacimiento') && pacienteDto.fechaNacimiento === undefined) {
+             paciente.fechaNacimiento = undefined; // Permitir borrar la fecha si se envía explícitamente undefined
+        }
+        // --- FIN DE LA MODIFICACIÓN CLAVE PARA FECHA EN UPDATE ---
 
         paciente = await this.pacienteRepository.save(paciente);
         return paciente;
@@ -68,8 +99,8 @@ export class PacienteService {
       }
     } catch (error) {
       throw new HttpException(
-        { status: HttpStatus.NOT_FOUND, error: `500 - ERROR: ` + error },
-        HttpStatus.NOT_FOUND
+        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -85,7 +116,7 @@ export class PacienteService {
       return true;
     } catch (error) {
       throw new HttpException(
-        { status: HttpStatus.NOT_FOUND, error: `500 - ERROR: ` + error },
+        { status: HttpStatus.NOT_FOUND, error: `500 - ERROR: ` + error.message },
         HttpStatus.NOT_FOUND
       )
     }

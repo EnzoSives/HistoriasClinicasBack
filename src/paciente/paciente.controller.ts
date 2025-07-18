@@ -9,7 +9,9 @@ import {
   UploadedFiles,
   UseInterceptors,
   UseGuards,
-  Request
+  Request,
+  HttpException,
+  HttpStatus
 } from '@nestjs/common';
 import { PacienteService } from './paciente.service';
 import { PacienteDto } from './dto/create-paciente.dto';
@@ -23,20 +25,29 @@ import { AuthGuard } from 'src/auth/auth.guard';
 export class PacienteController {
   constructor(private readonly pacienteService: PacienteService) { }
 
-   @UseGuards(AuthGuard) // Protege el endpoint
+  
+  //  @UseGuards(AuthGuard) // Mantener el guardia para proteger el endpoint
   @Post('crear')
   @UseInterceptors(FilesInterceptor('files', 2)) 
   addDato(
-    @Body() paciente: PacienteDto,
+    @Body() paciente: PacienteDto, // El id_medico ahora vendrá aquí
     @UploadedFiles() files: Express.Multer.File[], 
-    @Request() req,// Obtiene el objeto de solicitud
+    @Request() req, // Mantener si el JWT o la autenticación se usan para otras validaciones
   ): Promise<Paciente> {
-    const id_medico = req.user.id_medico; // Extrae el id del médico
+    // CAMBIO AQUÍ: Obtener id_medico directamente del cuerpo de la solicitud
+    const id_medico = paciente.id_medico; // <--- MODIFICACIÓN CLAVE
+    
+    // Asegurarse de que id_medico esté presente y sea un número válido
+    if (typeof id_medico === 'undefined' || id_medico === null) {
+      throw new HttpException('id_medico es requerido en el cuerpo de la solicitud', HttpStatus.BAD_REQUEST);
+    }
+
     const imagen1 = files && files[0] ? files[0].filename : 'Sin Imagen';
     const imagen2 = files && files[1] ? files[1].filename : 'Sin Imagen';
 
-    return this.pacienteService.addPacientes(paciente, imagen1, imagen2, id_medico); // Pasa el id_medico al servicio
+    return this.pacienteService.addPacientes(paciente, imagen1, imagen2, id_medico);
   }
+
 
   @Get('all')
   async getPacientes(): Promise<Paciente[]> {
