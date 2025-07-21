@@ -1,8 +1,9 @@
-// src/auth/auth.service.ts (ACTUALIZADO)
+// src/auth/auth.service.ts (CORREGIDO)
 import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,21 +12,8 @@ import { Role } from '../common/enum/rol.enum';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entities/user.entity';
 import { Medico } from 'src/medico/entities/medico.entity';
-
-export interface RegisterMedicoDto {
-  // Datos de usuario
-  username: string;
-  email: string;
-  password: string;
-  // Datos de médico
-  nombre: string;
-  apellido: string;
-  dni: string;
-  especialidad: string;
-  matricula: string;
-  telefono?: string;
-  colegioMedico?: string;
-}
+import { RegisterMedicoDto } from './dto/register.dto';
+ // Importar el DTO
 
 @Injectable()
 export class AuthService {
@@ -38,11 +26,20 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterMedicoDto) {
+    // Validar datos de entrada
+    if (!registerDto.username?.trim() || !registerDto.email?.trim()) {
+      throw new BadRequestException('Username y email son requeridos');
+    }
+
+    if (!registerDto.dni?.trim() || !registerDto.matricula?.trim()) {
+      throw new BadRequestException('DNI y matrícula son requeridos');
+    }
+
     // Verificar si ya existe usuario con ese username o email
     const usuarioExistente = await this.userRepository
       .createQueryBuilder('user')
-      .where('user.username = :username', { username: registerDto.username })
-      .orWhere('user.email = :email', { email: registerDto.email })
+      .where('user.username = :username', { username: registerDto.username.trim() })
+      .orWhere('user.email = :email', { email: registerDto.email.trim() })
       .getOne();
 
     if (usuarioExistente) {
@@ -51,20 +48,14 @@ export class AuthService {
       );
     }
 
-    // Verificar si ya existe médico con ese DNI o matrícula
-    const medicoExistente = await this.medicoRepository.findOne({
-      where: [{ dni: registerDto.dni }, { matricula: registerDto.matricula }],
-    });
+    // Verificar si ya existe médico con ese DNI o matrícula (UNA SOLA CONSULTA)
+    const medicoExistente = await this.medicoRepository
+      .createQueryBuilder('medico')
+      .where('medico.dni = :dni', { dni: registerDto.dni.trim() })
+      .orWhere('medico.matricula = :matricula', { matricula: registerDto.matricula.trim() })
+      .getOne();
 
-    const medicoPorDni = await this.medicoRepository.findOne({
-      where: { dni: registerDto.dni },
-    });
-
-    const medicoPorMatricula = await this.medicoRepository.findOne({
-      where: { matricula: registerDto.matricula },
-    });
-
-    if (medicoPorDni || medicoPorMatricula) {
+    if (medicoExistente) {
       throw new ConflictException(
         'Ya existe un médico con ese DNI o matrícula',
       );
@@ -76,22 +67,22 @@ export class AuthService {
 
     // Crear usuario
     const nuevoUser = new User();
-    nuevoUser.username = registerDto.username;
+    nuevoUser.username = registerDto.username.trim();
     nuevoUser.password = hashedPassword;
-    nuevoUser.email = registerDto.email;
+    nuevoUser.email = registerDto.email.trim();
     nuevoUser.role = Role.MEDICO;
 
     const userGuardado = await this.userRepository.save(nuevoUser);
 
     // Crear médico asociado
     const nuevoMedico = new Medico();
-    nuevoMedico.nombre = registerDto.nombre;
-    nuevoMedico.apellido = registerDto.apellido;
-    nuevoMedico.dni = registerDto.dni;
-    nuevoMedico.especialidad = registerDto.especialidad;
-    nuevoMedico.matricula = registerDto.matricula;
-    nuevoMedico.telefono = registerDto.telefono;
-    nuevoMedico.colegioMedico = registerDto.colegioMedico;
+    nuevoMedico.nombre = registerDto.nombre.trim();
+    nuevoMedico.apellido = registerDto.apellido.trim();
+    nuevoMedico.dni = registerDto.dni.trim();
+    nuevoMedico.especialidad = registerDto.especialidad.trim();
+    nuevoMedico.matricula = registerDto.matricula.trim();
+    nuevoMedico.telefono = registerDto.telefono?.trim();
+    nuevoMedico.colegioMedico = registerDto.colegioMedico?.trim();
 
     nuevoMedico.user_id = userGuardado.id;
     await this.medicoRepository.save(nuevoMedico);
@@ -101,15 +92,25 @@ export class AuthService {
   }
 
   async login(username: string, password: string) {
-    const user = await this.userRepository.findOne({
-      where: [
-        { username },
-        { email: username }, // Permitir login con email o username
-      ],
-      relations: ['medico'],
-    });
+    // Validar parámetros de entrada
+    if (!username?.trim() || !password) {
+      throw new UnauthorizedException('Username y password son requeridos');
+    }
 
-    if (!user || !user.isActive) {
+    const usernameClean = username.trim();
+
+    // Usar QueryBuilder para mayor control sobre la consulta
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.medico', 'medico')
+      .where('(user.username = :username OR user.email = :email)', {
+        username: usernameClean,
+        email: usernameClean,
+      })
+      .andWhere('user.isActive = :isActive', { isActive: true })
+      .getOne();
+
+    if (!user) {
       throw new UnauthorizedException('Usuario no encontrado o inactivo');
     }
 
@@ -150,10 +151,18 @@ export class AuthService {
   }
 
   async obtenerPerfilCompleto(userId: number): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId, isActive: true },
-      relations: ['medico', 'medico.pacientes'],
-    });
+    // Validar userId
+    if (!userId || userId <= 0) {
+      throw new BadRequestException('ID de usuario inválido');
+    }
+
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.medico', 'medico')
+      .leftJoinAndSelect('medico.pacientes', 'pacientes')
+      .where('user.id = :id', { id: userId })
+      .andWhere('user.isActive = :isActive', { isActive: true })
+      .getOne();
 
     if (!user) {
       throw new UnauthorizedException('Usuario no encontrado');
@@ -175,11 +184,26 @@ export class AuthService {
       datosUser.password = await bcrypt.hash(datosUser.password, saltRounds);
     }
 
+    // Limpiar strings si existen
+    if (datosUser.username) {
+      datosUser.username = datosUser.username.trim();
+    }
+    if (datosUser.email) {
+      datosUser.email = datosUser.email.trim();
+    }
+
     Object.assign(user, datosUser);
     await this.userRepository.save(user);
 
     // Actualizar datos de médico si existen
     if (datosMedico && user.medico) {
+      // Limpiar strings en datos del médico
+      Object.keys(datosMedico).forEach(key => {
+        if (typeof datosMedico[key] === 'string') {
+          datosMedico[key] = datosMedico[key].trim();
+        }
+      });
+
       Object.assign(user.medico, datosMedico);
       await this.medicoRepository.save(user.medico);
     }
@@ -187,3 +211,5 @@ export class AuthService {
     return this.obtenerPerfilCompleto(userId);
   }
 }
+
+export { RegisterMedicoDto };

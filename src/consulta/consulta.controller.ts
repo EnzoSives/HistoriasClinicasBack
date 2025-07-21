@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe, Res, UseGuards, Request } from '@nestjs/common';
 import { ConsultaService } from './consulta.service';
 import { ConsultaDto } from './dto/create-consulta.dto';
 import { UpdateConsultaDto } from './dto/update-consulta.dto';
@@ -7,6 +7,7 @@ import { Response } from 'express';
 import { PdfService } from '../pdf/pdf.service';
 import { PacienteService } from 'src/paciente/paciente.service'; // Importar el servicio de paciente
 import { Paciente } from 'src/paciente/entities/paciente.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('consulta')
 export class ConsultaController {
@@ -62,9 +63,14 @@ export class ConsultaController {
     res.end(pdfBuffer);
   }
   
+   @UseGuards(AuthGuard) // Protege el endpoint
   @Post('crear')
-  addDato(@Body() consulta: ConsultaDto): Promise<Consulta> {
-    return this.consultaService.addConsulta(consulta);
+  addDato(
+    @Body() consulta: ConsultaDto,
+    @Request() req, // Obtiene el objeto de solicitud
+  ): Promise<Consulta> {
+    const id_medico = req.user.id_medico; // Extrae el id del médico del token
+    return this.consultaService.addConsulta(consulta, id_medico); // Pasa el id_medico al servicio
   }
 
   @Get('all')
