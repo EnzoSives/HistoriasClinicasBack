@@ -30,6 +30,23 @@ export class PacienteService {
       )
     }
   }
+
+   // NUEVO MÉTODO
+  public async getPacientesByMedicoId(id_medico: number): Promise<Paciente[]> {
+    try {
+      const pacientes: Paciente[] = await this.pacienteRepository.find({ where: { id_medico: id_medico } });
+      if (pacientes.length > 0) {
+        return pacientes;
+      } else {
+        return [];
+      }
+    } catch (error) {
+      throw new HttpException(
+        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
+    }
+  }
   
   public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string): Promise<Paciente> {
     try {

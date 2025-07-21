@@ -8,6 +8,10 @@ import {
   Delete,
   UploadedFiles,
   UseInterceptors,
+  HttpException,
+  HttpStatus,
+  Request,
+  ParseIntPipe
 } from '@nestjs/common';
 import { PacienteService } from './paciente.service';
 import { PacienteDto } from './dto/create-paciente.dto';
@@ -42,6 +46,18 @@ export class PacienteController {
   @Get(':id')
   async getId(@Param('id') id: number): Promise<Paciente> {
     return this.pacienteService.getId(id);
+  }
+
+  // NUEVO ENDPOINT
+  // @UseGuards(AuthGuard)
+   // ENDPOINT MODIFICADO
+  @Get('medico/:id_medico')
+  async getPacientesPorMedico(
+    @Param('id_medico', ParseIntPipe) id_medico: number
+  ): Promise<Paciente[]> {
+    // Ya no se necesita el AuthGuard para obtener el id,
+    // pero puedes mantenerlo si quieres que la ruta siga siendo protegida.
+    return this.pacienteService.getPacientesByMedicoId(id_medico);
   }
 
   @Patch('actualizar/:id')

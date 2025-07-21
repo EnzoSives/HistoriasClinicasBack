@@ -81,4 +81,6 @@ export class PacienteDto {
   readonly imagen?: string;
   @IsOptional()
   readonly imagen2?: string;
+  @IsOptional()
+  readonly fechaCreacion?: Date;
 }

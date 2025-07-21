@@ -175,6 +175,9 @@ export class Paciente {
   @Column({ default: true })
   activo: boolean;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  fechaCreacion: Date;
+
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
   fechaHoraInicioHistoriaClinica: Date;
 
