@@ -63,15 +63,30 @@ export class ConsultaController {
     res.end(pdfBuffer);
   }
   
-   @UseGuards(AuthGuard) // Protege el endpoint
-  @Post('crear')
-  addDato(
-    @Body() consulta: ConsultaDto,
-    @Request() req, // Obtiene el objeto de solicitud
-  ): Promise<Consulta> {
-    const id_medico = req.user.id_medico; // Extrae el id del médico del token
-    return this.consultaService.addConsulta(consulta, id_medico); // Pasa el id_medico al servicio
+ @UseGuards(AuthGuard)
+@Post('crear')
+addDato(
+  @Body() consulta: ConsultaDto,
+  @Request() req,
+): Promise<Consulta> {
+  // --- PASO 1: VERIFICAR EL CONTENIDO DEL TOKEN ---
+  console.log('Contenido del token (req.user):', req.user);
+
+  const id_medico = req.user.id; // Extrae el id del médico del token
+
+  // --- PASO 2: VERIFICAR EL ID EXTRAÍDO ---
+  console.log('ID del médico extraído:', id_medico);
+  
+  // Si id_medico es undefined aquí, la aplicación fallará
+  if (!id_medico) {
+      throw new HttpException(
+          'No se pudo identificar al médico desde el token de autenticación.', 
+          HttpStatus.UNAUTHORIZED
+      );
   }
+
+  return this.consultaService.addConsulta(consulta, id_medico);
+}
 
   @Get('all')
   async getConsultas(): Promise<Consulta[]> {
