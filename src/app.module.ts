@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MedicoModule } from './medico/medico.module';
+import { ImagenModule } from './imagen/imagen.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { MedicoModule } from './medico/medico.module';
     ConsultaModule,
     AuthModule,
     MedicoModule,
+    ImagenModule,
   ],
   controllers: [AppController],
   providers: [AppService],

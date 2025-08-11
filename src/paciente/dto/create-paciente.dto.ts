@@ -78,10 +78,6 @@ export class PacienteDto {
   @IsOptional()
   readonly primerObservacion?: string;
   @IsOptional()
-  readonly imagen?: string;
-  @IsOptional()
-  readonly imagen2?: string;
-  @IsOptional()
   readonly fechaCreacion?: Date;
   readonly id_medico?: number; // Asegúrate de que este campo sea opcional si no siempre se proporciona
 }

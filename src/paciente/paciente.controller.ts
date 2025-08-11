@@ -10,42 +10,57 @@ import {
   UseInterceptors,
   HttpException,
   HttpStatus,
-  Request,
-  ParseIntPipe
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PacienteService } from './paciente.service';
 import { PacienteDto } from './dto/create-paciente.dto';
-
+import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { Paciente } from './entities/paciente.entity';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { AuthGuard } from 'src/auth/auth.guard';
-
+import { multerOptions } from '../config/multer.config'; // Asumiendo que creaste este archivo
 
 @Controller('paciente')
 export class PacienteController {
-  constructor(private readonly pacienteService: PacienteService) { }
+  constructor(private readonly pacienteService: PacienteService) {}
 
-  
-  //  @UseGuards(AuthGuard) // Mantener el guardia para proteger el endpoint
+  /**
+   * Endpoint para crear un nuevo paciente con imágenes.
+   * Utiliza FilesInterceptor para manejar múltiples archivos.
+   * @param pacienteDto - Datos del paciente.
+   * @param files - Array de archivos de imagen subidos.
+   */
   @Post('crear')
-  @UseInterceptors(FilesInterceptor('files', 2)) 
-  addDato(
-    @Body() paciente: PacienteDto, // El id_medico ahora vendrá aquí
-    @UploadedFiles() files: Express.Multer.File[], 
-    @Request() req, // Mantener si el JWT o la autenticación se usan para otras validaciones
+  @UseInterceptors(FilesInterceptor('files', 10, multerOptions)) // Permite hasta 10 archivos
+  crearPaciente(
+    @Body() pacienteDto: PacienteDto,
+    @UploadedFiles() files: Express.Multer.File[],
   ): Promise<Paciente> {
-    // CAMBIO AQUÍ: Obtener id_medico directamente del cuerpo de la solicitud
-    const id_medico = paciente.id_medico; // <--- MODIFICACIÓN CLAVE
-    
-    // Asegurarse de que id_medico esté presente y sea un número válido
-    if (typeof id_medico === 'undefined' || id_medico === null) {
-      throw new HttpException('id_medico es requerido en el cuerpo de la solicitud', HttpStatus.BAD_REQUEST);
+    // La validación del id_medico ahora se puede hacer en el DTO o en el servicio.
+    if (!pacienteDto.id_medico) {
+      throw new HttpException(
+        'El id_medico es requerido en el cuerpo de la solicitud',
+        HttpStatus.BAD_REQUEST,
+      );
     }
+    // Llama al nuevo método del servicio que maneja la lógica de creación
+    // y la asociación de las imágenes.
+    return this.pacienteService.crearPacienteConImagenes(pacienteDto, files);
+  }
 
-    const imagen1 = files && files[0] ? files[0].filename : 'Sin Imagen';
-    const imagen2 = files && files[1] ? files[1].filename : 'Sin Imagen';
-
-    return this.pacienteService.addPacientes(paciente, imagen1, imagen2, id_medico);
+  /**
+   * Endpoint para actualizar un paciente existente, permitiendo también la subida de nuevas imágenes.
+   * @param id - ID del paciente a actualizar.
+   * @param updatePacienteDto - Datos a actualizar del paciente.
+   * @param files - Nuevas imágenes para agregar al paciente.
+   */
+  @Patch('actualizar/:id')
+  @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
+  actualizarPaciente(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePacienteDto: UpdatePacienteDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<Paciente> {
+    return this.pacienteService.actualizarPacienteConImagenes(id, updatePacienteDto, files);
   }
 
 
@@ -55,33 +70,19 @@ export class PacienteController {
   }
 
   @Get(':id')
-  async getId(@Param('id') id: number): Promise<Paciente> {
+  async getId(@Param('id', ParseIntPipe) id: number): Promise<Paciente> {
     return this.pacienteService.getId(id);
   }
 
-  // NUEVO ENDPOINT
-  // @UseGuards(AuthGuard)
-   // ENDPOINT MODIFICADO
   @Get('medico/:id_medico')
   async getPacientesPorMedico(
-    @Param('id_medico', ParseIntPipe) id_medico: number
+    @Param('id_medico', ParseIntPipe) id_medico: number,
   ): Promise<Paciente[]> {
-    // Ya no se necesita el AuthGuard para obtener el id,
-    // pero puedes mantenerlo si quieres que la ruta siga siendo protegida.
     return this.pacienteService.getPacientesByMedicoId(id_medico);
   }
 
-  @Patch('actualizar/:id')
-  updateDatoId(
-    @Param('id') id: number,
-    @Body() paciente: PacienteDto,
-  ): Promise<Paciente> {
-    return this.pacienteService.updatePacienteId(id, paciente);
-  }
-
   @Delete('eliminar/:id')
-  deleteDato(@Param('id') id: number): Promise<boolean> {
+  deleteDato(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
     return this.pacienteService.deletePaciente(id);
   }
-  
 }

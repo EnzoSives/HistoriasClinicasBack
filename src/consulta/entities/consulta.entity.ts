@@ -1,7 +1,8 @@
 // src/consulta/entities/consulta.entity.ts (ACTUALIZADA para incluir relación con médico)
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { Paciente } from 'src/paciente/entities/paciente.entity';
 import { Medico } from 'src/medico/entities/medico.entity';
+import { Imagen } from 'src/imagen/entities/imagen.entity';
 
 @Entity()
 export class Consulta {
@@ -51,4 +52,7 @@ export class Consulta {
 
   @Column()
   id_medico: number;
+
+  @OneToMany(() => Imagen, (imagen) => imagen.consulta, { cascade: true })
+  imagenes: Imagen[];
 }

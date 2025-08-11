@@ -1,10 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { ConsultaDto } from './dto/create-consulta.dto';
 import { UpdateConsultaDto } from './dto/update-consulta.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Consulta } from './entities/consulta.entity';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Paciente } from 'src/paciente/entities/paciente.entity';
+import { Imagen } from 'src/imagen/entities/imagen.entity';
 
 @Injectable()
 export class ConsultaService {
@@ -31,32 +32,42 @@ export class ConsultaService {
     }
   }
 
- public async addConsulta(consultaDto: ConsultaDto, id_medico: number): Promise<Consulta> {
+ public async crearConsultaConImagenes(consultaDto: ConsultaDto, files: Express.Multer.File[], id_medico: number): Promise<Consulta> {
     try {
-        const pacienteId = consultaDto.id_paciente;
-
-        const paciente = await this.pacienteRepository.findOne({ where: { id_paciente: pacienteId } });
+        const paciente = await this.pacienteRepository.findOne({ where: { id_paciente: consultaDto.id_paciente } });
         if (!paciente) {
-            throw new Error(`El paciente con id: ${pacienteId} no existe`);
+            throw new NotFoundException(`El paciente con id: ${consultaDto.id_paciente} no existe.`);
         }
 
-        let consulta = new Consulta();
-        consulta.motivoConsulta = consultaDto.motivoConsulta;
-        consulta.observaciones = consultaDto.observaciones;
-        consulta.fechaConsulta = consultaDto.fechaConsulta; // Asigna la fecha de la consulta
-        consulta.paciente = paciente;
-        consulta.id_medico = id_medico;
+        const nuevaConsulta = this.consultaRepository.create({
+          ...consultaDto,
+          paciente: paciente,
+          id_medico: id_medico,
+        });
 
-        consulta = await this.consultaRepository.save(consulta);
+        // Procesa y asocia las imágenes si se subieron archivos.
+        if (files && files.length > 0) {
+          nuevaConsulta.imagenes = files.map(file => {
+            const imagen = new Imagen();
+            imagen.filename = file.filename;
+            imagen.path = file.path;
+            return imagen;
+          });
+        }
+        
+        // Guarda la consulta y sus imágenes asociadas.
+        return await this.consultaRepository.save(nuevaConsulta);
 
-        return consulta;
     } catch (error) {
+        if (error instanceof NotFoundException) {
+            throw error;
+        }
         throw new HttpException(
-            { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error },
+            { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `Error al crear la consulta: ${error.message}` },
             HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
-}
+  }
 
   public async updateConsultaId(
     id: number,

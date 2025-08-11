@@ -1,22 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express'; // <-- 1. IMPORTAR
+import { join } from 'path'; // <-- 2. IMPORTAR
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // 3. Especificar el tipo NestExpressApplication
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Configurar CORS
   app.enableCors({
-    // origin: 'https://secretariamadariaga-799ec.web.app',
-    // origin: 'http://149.50.142.190:5173/',
     origin: '*',
-     // Reemplaza con el origen de tu frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
  
+  // 4. Servir archivos estáticos desde la carpeta 'uploads'
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/', // Las imágenes estarán disponibles en http://.../uploads/nombre_archivo.jpg
+  });
 
   await app.listen(3000);
 }
 
 bootstrap();
-

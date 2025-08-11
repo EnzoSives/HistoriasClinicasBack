@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, ManyToOne, JoinColumn, UpdateDateColumn } from 'typeorm';
 import { Consulta } from 'src/consulta/entities/consulta.entity';
 import { Medico } from 'src/medico/entities/medico.entity';
+import { Imagen } from 'src/imagen/entities/imagen.entity';
 
 export interface DatosPaciente {
   nombre?: string;
@@ -200,6 +201,9 @@ export class Paciente {
     eager: false 
   })
   consultas: Consulta[];
+
+  @OneToMany(() => Imagen, (imagen) => imagen.paciente, { cascade: true })
+  imagenes: Imagen[];
 
   // Constructor
   constructor(datos?: Partial<DatosPaciente>) {

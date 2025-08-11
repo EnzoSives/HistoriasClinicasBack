@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe, Res, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe, Res, UseGuards, Request, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ConsultaService } from './consulta.service';
 import { ConsultaDto } from './dto/create-consulta.dto';
 import { UpdateConsultaDto } from './dto/update-consulta.dto';
@@ -8,6 +8,8 @@ import { PdfService } from '../pdf/pdf.service';
 import { PacienteService } from 'src/paciente/paciente.service'; // Importar el servicio de paciente
 import { Paciente } from 'src/paciente/entities/paciente.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/config/multer.config';
 
 @Controller('consulta')
 export class ConsultaController {
@@ -63,30 +65,27 @@ export class ConsultaController {
     res.end(pdfBuffer);
   }
   
- @UseGuards(AuthGuard)
-@Post('crear')
-addDato(
-  @Body() consulta: ConsultaDto,
-  @Request() req,
-): Promise<Consulta> {
-  // --- PASO 1: VERIFICAR EL CONTENIDO DEL TOKEN ---
-  console.log('Contenido del token (req.user):', req.user);
+// @UseGuards(AuthGuard) // <-- 1. SE COMENTA O ELIMINA EL GUARDIA
+  @Post('crear')
+  @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
+  crearConsulta(
+    @Body() consultaDto: ConsultaDto, // El DTO ahora incluye id_medico
+    @UploadedFiles() files: Express.Multer.File[],
+    // Se elimina @Request() req
+  ): Promise<Consulta> {
+    // 2. Se obtiene el id_medico directamente del DTO
+    const id_medico = consultaDto.id_medico;
 
-  const id_medico = req.user.id; // Extrae el id del médico del token
-
-  // --- PASO 2: VERIFICAR EL ID EXTRAÍDO ---
-  console.log('ID del médico extraído:', id_medico);
-  
-  // Si id_medico es undefined aquí, la aplicación fallará
-  if (!id_medico) {
+    if (!id_medico) {
       throw new HttpException(
-          'No se pudo identificar al médico desde el token de autenticación.', 
-          HttpStatus.UNAUTHORIZED
+          'El id_medico es requerido en el cuerpo de la solicitud', 
+          HttpStatus.BAD_REQUEST
       );
+    }
+    
+    return this.consultaService.crearConsultaConImagenes(consultaDto, files, id_medico);
   }
 
-  return this.consultaService.addConsulta(consulta, id_medico);
-}
 
   @Get('all')
   async getConsultas(): Promise<Consulta[]> {

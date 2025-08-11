@@ -5,6 +5,7 @@ export class ConsultaDto {
     readonly motivoConsulta?: string;
     readonly observaciones?: string;
     readonly id_paciente: number; // Campo requerido
+    readonly id_medico: number; // Campo requerido
     readonly fechaConsulta: Date;
   
     @IsOptional()

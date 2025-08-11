@@ -1,141 +1,158 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PacienteDto } from './dto/create-paciente.dto';
 import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { FindOneOptions, Repository } from 'typeorm';
 import { Paciente } from './entities/paciente.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Imagen } from '../imagen/entities/imagen.entity';
 
 @Injectable()
 export class PacienteService {
-  constructor(@InjectRepository(Paciente) private pacienteRepository: Repository<Paciente>) { }
+  constructor(
+    @InjectRepository(Paciente)
+    private readonly pacienteRepository: Repository<Paciente>,
+  ) {}
 
-
-  public async getAll(): Promise<Paciente[]> {
-    return await this.pacienteRepository.find();
-  }
-
-  public async getId(id: number): Promise<Paciente> {
+  /**
+   * Crea un nuevo paciente y asocia las imágenes subidas.
+   * @param pacienteDto - Datos para crear el paciente.
+   * @param files - Array de archivos de imagen subidos.
+   */
+  public async crearPacienteConImagenes(
+    pacienteDto: PacienteDto,
+    files: Express.Multer.File[],
+  ): Promise<Paciente> {
     try {
-      const criterio: FindOneOptions = { where: { id_paciente: id } }
-      let paciente: Paciente = await this.pacienteRepository.findOne(criterio);
-      if (paciente)
-        return paciente;
-      else
-        throw new Error(`No se encontro ciudad con id: ${id}`);
-    }
-    catch (error) {
-      throw new HttpException(
-        { status: HttpStatus.NOT_FOUND, error: `500 - ERROR: ` + error },
-        HttpStatus.NOT_FOUND
-      )
-    }
-  }
+      // Separa la fecha del resto de los datos para manejarla correctamente.
+      const { fechaNacimiento, ...restOfDto } = pacienteDto;
+      const paciente = this.pacienteRepository.create(restOfDto);
 
-   // NUEVO MÉTODO
-  public async getPacientesByMedicoId(id_medico: number): Promise<Paciente[]> {
-    try {
-      const pacientes: Paciente[] = await this.pacienteRepository.find({ where: { id_medico: id_medico } });
-      if (pacientes.length > 0) {
-        return pacientes;
-      } else {
-        return [];
-      }
-    } catch (error) {
-      throw new HttpException(
-        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error },
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
-    }
-  }
-  
-   public async addPacientes(pacienteDto: PacienteDto, imagePath: string, imagePath2: string, id_medico: number): Promise<Paciente> {
-    try {
-      let paciente: Paciente = new Paciente();
-      Object.assign(paciente, pacienteDto);
-
-      // --- INICIO DE LA MODIFICACIÓN CLAVE PARA FECHA ---
-      if (pacienteDto.fechaNacimiento) {
-        const parsedDate = new Date(pacienteDto.fechaNacimiento);
-        // Validar si la fecha es un objeto de fecha válido
-        if (isNaN(parsedDate.getTime())) {
-            throw new Error('Formato de fecha de nacimiento inválido.');
+      // --- CORRECCIÓN DE FECHA ---
+      // Si se proporciona una fecha de nacimiento, la convierte a un objeto Date.
+      // TypeORM se encargará de formatearla correctamente para la base de datos.
+      if (fechaNacimiento) {
+        paciente.fechaNacimiento = new Date(fechaNacimiento);
+        if (isNaN(paciente.fechaNacimiento.getTime())) {
+          throw new Error('Formato de fecha de nacimiento inválido.');
         }
-        // Formatear a 'YYYY-MM-DD' para la columna DATE de MySQL
-        const year = parsedDate.getFullYear();
-        const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0'); // Meses son de 0-11
-        const day = parsedDate.getDate().toString().padStart(2, '0');
-        paciente.fechaNacimiento = `${year}-${month}-${day}` as any; // Se usa 'as any' para compatibilidad de tipo temporal
-      } else {
-          paciente.fechaNacimiento = undefined; // Asegurarse de que sea undefined si no se provee
       }
-      // --- FIN DE LA MODIFICACIÓN CLAVE PARA FECHA ---
 
-      paciente.imagen = imagePath;
-      paciente.imagen2 = imagePath2;
-      paciente.id_medico = id_medico;
+      if (files && files.length > 0) {
+        paciente.imagenes = files.map((file) => {
+          const imagen = new Imagen();
+          imagen.filename = file.filename;
+          imagen.path = file.path;
+          return imagen;
+        });
+      }
 
-      paciente = await this.pacienteRepository.save(paciente);
-      if (paciente) return paciente;
-      else throw new Error(`No se pudo agregar los datos`);
+      return await this.pacienteRepository.save(paciente);
     } catch (error) {
-      // Cambiado a INTERNAL_SERVER_ERROR ya que es un error de procesamiento del servidor
       throw new HttpException(
-        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error.message },
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Ocurrió un error al crear el paciente: ${error.message}`,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  public async updatePacienteId(id: number, pacienteDto: Partial<PacienteDto>): Promise<Paciente> {
-    try {
-      const criterio: FindOneOptions = { where: { id_paciente: id } };
-      let paciente: Paciente = await this.pacienteRepository.findOne(criterio);
+  /**
+   * Actualiza un paciente existente y le añade nuevas imágenes.
+   * @param id - ID del paciente a actualizar.
+   * @param updatePacienteDto - Datos a actualizar.
+   * @param files - Nuevos archivos de imagen para agregar.
+   */
+  public async actualizarPacienteConImagenes(
+    id: number,
+    updatePacienteDto: UpdatePacienteDto,
+    files: Express.Multer.File[],
+  ): Promise<Paciente> {
+    const paciente = await this.pacienteRepository.findOne({
+      where: { id_paciente: id },
+      relations: ['imagenes'],
+    });
 
-      if (paciente) {
-        Object.assign(paciente, pacienteDto);
+    if (!paciente) {
+      throw new NotFoundException(`No se encontró el paciente con id: ${id}`);
+    }
 
-        // --- INICIO DE LA MODIFICACIÓN CLAVE PARA FECHA EN UPDATE ---
-        if (pacienteDto.fechaNacimiento) {
-            const parsedDate = new Date(pacienteDto.fechaNacimiento);
-            if (isNaN(parsedDate.getTime())) {
-                throw new Error('Formato de fecha de nacimiento inválido.');
-            }
-            const year = parsedDate.getFullYear();
-            const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
-            const day = parsedDate.getDate().toString().padStart(2, '0');
-            paciente.fechaNacimiento = `${year}-${month}-${day}` as any;
-        } else if (Object.prototype.hasOwnProperty.call(pacienteDto, 'fechaNacimiento') && pacienteDto.fechaNacimiento === undefined) {
-             paciente.fechaNacimiento = undefined; // Permitir borrar la fecha si se envía explícitamente undefined
-        }
-        // --- FIN DE LA MODIFICACIÓN CLAVE PARA FECHA EN UPDATE ---
+    // Separa la fecha para manejarla antes de asignar el resto de los datos.
+    const { fechaNacimiento, ...restOfDto } = updatePacienteDto;
+    Object.assign(paciente, restOfDto);
 
-        paciente = await this.pacienteRepository.save(paciente);
-        return paciente;
-      } else {
-        throw new Error(`No se pudo actualizar el id: ${id}`);
+    // --- CORRECCIÓN DE FECHA EN UPDATE ---
+    if (fechaNacimiento) {
+      paciente.fechaNacimiento = new Date(fechaNacimiento);
+      if (isNaN(paciente.fechaNacimiento.getTime())) {
+        throw new Error('Formato de fecha de nacimiento inválido.');
       }
+    }
+
+    if (files && files.length > 0) {
+      const nuevasImagenes = files.map((file) => {
+        const imagen = new Imagen();
+        imagen.filename = file.filename;
+        imagen.path = file.path;
+        return imagen;
+      });
+      paciente.imagenes = [...(paciente.imagenes || []), ...nuevasImagenes];
+    }
+
+    try {
+      return await this.pacienteRepository.save(paciente);
     } catch (error) {
       throw new HttpException(
-        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `500 - ERROR: ` + error.message },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Ocurrió un error al actualizar el paciente: ${error.message}`,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
+  public async getAll(): Promise<Paciente[]> {
+    return await this.pacienteRepository.find({ relations: ['imagenes'] });
+  }
+
+  public async getId(id: number): Promise<Paciente> {
+    const paciente = await this.pacienteRepository.findOne({
+      where: { id_paciente: id },
+      relations: ['imagenes', 'consultas'],
+    });
+    if (!paciente) {
+      throw new NotFoundException(`No se encontró el paciente con id: ${id}`);
+    }
+    return paciente;
+  }
+
+  public async getPacientesByMedicoId(id_medico: number): Promise<Paciente[]> {
+    return await this.pacienteRepository.find({
+      where: { id_medico: id_medico },
+      relations: ['imagenes'],
+    });
+  }
+
   public async deletePaciente(id: number): Promise<boolean> {
     try {
-      let criterio: FindOneOptions = { where: { id_paciente: id } };
-      let paciente: Paciente = await this.pacienteRepository.findOne(criterio);
-      if (!paciente)
-        throw new Error(`No se pudo actualizar eliminar`)
-      else
-        await this.pacienteRepository.delete(id);
+      const result = await this.pacienteRepository.delete(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`No se encontró el paciente con id: ${id} para eliminar.`);
+      }
       return true;
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new HttpException(
-        { status: HttpStatus.NOT_FOUND, error: `500 - ERROR: ` + error.message },
-        HttpStatus.NOT_FOUND
-      )
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Ocurrió un error al eliminar el paciente: ${error.message}`,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
