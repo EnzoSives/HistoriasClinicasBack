@@ -103,6 +103,11 @@ export class ConsultaController {
     return consultas;
   }
 
+  @Get('medico/:id_medico')
+  async getConsultasByMedicoId(@Param('id_medico', ParseIntPipe) id_medico: number): Promise<Consulta[]> {
+    return this.consultaService.getConsultasByMedicoId(id_medico);
+  }
+
   @Patch('actualizar/:id')
   updateDatoId(@Param('id') id: number, @Body() consulta: ConsultaDto): Promise<Consulta> {
     return this.consultaService.updateConsultaId(id, consulta);

@@ -1,16 +1,19 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PacienteDto } from './dto/create-paciente.dto';
 import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { FindOneOptions, Repository } from 'typeorm';
 import { Paciente } from './entities/paciente.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Imagen } from '../imagen/entities/imagen.entity';
+import { Medico } from 'src/medico/entities/medico.entity';
 
 @Injectable()
 export class PacienteService {
   constructor(
     @InjectRepository(Paciente)
     private readonly pacienteRepository: Repository<Paciente>,
+    @InjectRepository(Medico) // <-- 2. INYECTA EL REPOSITORIO DE MEDICO
+    private readonly medicoRepository: Repository<Medico>,
   ) {}
 
   /**
@@ -18,11 +21,22 @@ export class PacienteService {
    * @param pacienteDto - Datos para crear el paciente.
    * @param files - Array de archivos de imagen subidos.
    */
-  public async crearPacienteConImagenes(
+ public async crearPacienteConImagenes(
     pacienteDto: PacienteDto,
     files: Express.Multer.File[],
   ): Promise<Paciente> {
     try {
+      // --- 3. AÑADE LA VALIDACIÓN ---
+      if (!pacienteDto.id_medico) {
+        throw new BadRequestException('El id_medico es requerido.');
+      }
+      
+      const medico = await this.medicoRepository.findOne({ where: { id_medico: pacienteDto.id_medico } });
+      if (!medico) {
+        throw new NotFoundException(`El médico con ID ${pacienteDto.id_medico} no existe.`);
+      }
+      // --- FIN DE LA VALIDACIÓN ---
+
       // Separa la fecha del resto de los datos para manejarla correctamente.
       const { fechaNacimiento, ...restOfDto } = pacienteDto;
       const paciente = this.pacienteRepository.create(restOfDto);
@@ -48,6 +62,10 @@ export class PacienteService {
 
       return await this.pacienteRepository.save(paciente);
     } catch (error) {
+      // Mejora del manejo de errores para devolver excepciones específicas
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,

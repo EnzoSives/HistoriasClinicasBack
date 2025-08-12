@@ -128,4 +128,28 @@ export class ConsultaService {
       );
     }
   }
+
+  // Nuevo método para obtener las consultas por id_medico
+  public async getConsultasByMedicoId(idMedico: number): Promise<Consulta[]> {
+    try {
+      const criterio: FindManyOptions<Consulta> = { where: { id_medico: idMedico } };
+      const consultas: Consulta[] = await this.consultaRepository.find(criterio);
+
+      if (consultas.length > 0) {
+        return consultas;
+      } else {
+        // Lanza una excepción si no se encuentran consultas
+        throw new NotFoundException(`No se encontraron consultas para el médico con id: ${idMedico}`);
+      }
+    } catch (error) {
+      // Manejo de errores
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException(
+        { status: HttpStatus.INTERNAL_SERVER_ERROR, error: `Error al obtener las consultas: ${error.message}` },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
