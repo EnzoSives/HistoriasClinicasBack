@@ -9,7 +9,7 @@ export class Consulta {
   @PrimaryGeneratedColumn()
   id_consulta: number;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'datetime' })
   fechaConsulta: Date;
 
   @Column({ type: 'text', nullable: true })
@@ -35,7 +35,8 @@ export class Consulta {
 
   // Relación con Paciente
   @ManyToOne(() => Paciente, paciente => paciente.consultas, { 
-    nullable: false 
+    nullable: false, 
+    onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'id_paciente' })
   paciente: Paciente;
