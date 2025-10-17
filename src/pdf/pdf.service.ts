@@ -28,12 +28,12 @@ export class PdfService {
     yPosition += 5;
     doc.setFontSize(normalFontSize - 2);
     doc.setFont('helvetica', 'normal');
-    doc.text(
-      'NORMA OFICIAL MEXICANA NOM-004-SSA3-2012, DEL EXPEDIENTE CLÍNICO',
-      pageWidth / 2,
-      yPosition,
-      { align: 'center' },
-    );
+    // doc.text(
+    //   'NORMA OFICIAL MEXICANA NOM-004-SSA3-2012, DEL EXPEDIENTE CLÍNICO',
+    //   pageWidth / 2,
+    //   yPosition,
+    //   { align: 'center' },
+    // );
     yPosition += 10;
 
     // --- Función para dibujar encabezado de sección ---

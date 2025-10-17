@@ -11,6 +11,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MedicoModule } from './medico/medico.module';
 import { ImagenModule } from './imagen/imagen.module';
+import { TurnoModule } from './turno/turno.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ImagenModule } from './imagen/imagen.module';
     AuthModule,
     MedicoModule,
     ImagenModule,
+    TurnoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
