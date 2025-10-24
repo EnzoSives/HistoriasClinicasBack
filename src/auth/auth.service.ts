@@ -134,19 +134,15 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        medico: user.medico
-          ? {
-              id_medico: user.medico.id_medico,
-              nombreCompleto: user.medico.nombreCompleto,
-              especialidad: user.medico.especialidad,
-              matricula: user.medico.matricula,
-            }
-          : null,
-      },
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      // --- CAMBIO AQUÍ ---
+      // Simplemente pasa el objeto medico completo que ya fue cargado
+      medico: user.medico ? user.medico : null,
+      // --- FIN DEL CAMBIO ---
+  },
     };
   }
 

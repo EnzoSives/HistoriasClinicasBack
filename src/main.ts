@@ -17,6 +17,7 @@ async function bootstrap() {
   // 4. Servir archivos estáticos desde la carpeta 'uploads'
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/', // Las imágenes estarán disponibles en http://.../uploads/nombre_archivo.jpg
+    index: false // Disable automatic index.html lookup
   });
 
   await app.listen(3000);

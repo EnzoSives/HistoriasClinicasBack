@@ -11,7 +11,7 @@ export const multerOptions = {
 
   // Filtrar archivos para aceptar solo imágenes
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|pdf)$/)) {
       // Aceptar el archivo
       cb(null, true);
     } else {

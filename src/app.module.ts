@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ServeStaticModule } from '@nestjs/serve-static'; // <-- 1. IMPORTAR
-import { join } from 'path'; // <-- 2. IMPORTAR
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 import { UsersModule } from './users/users.module';
 import { PacienteModule } from './paciente/paciente.module';
@@ -15,13 +15,14 @@ import { TurnoModule } from './turno/turno.module';
 
 @Module({
   imports: [
-    // --- 3. AÑADIR ESTE BLOQUE ---
     ServeStaticModule.forRoot({
-      serveRoot: '/uploads', // La URL pública (ej: http://localhost:3000/uploads/imagen.jpg)
-      rootPath: join(__dirname, '..', 'uploads'), // La carpeta física en tu servidor
+      serveRoot: '/uploads',
+      rootPath: join(__dirname, '..', 'uploads'),
+      renderPath: '/*',
+      serveStaticOptions: {
+        index: false,
+      },
     }),
-    // --- FIN DEL BLOQUE AÑADIDO ---
-
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: '179.43.127.133',
