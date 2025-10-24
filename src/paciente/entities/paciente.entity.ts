@@ -164,7 +164,7 @@ export class Paciente {
   @Column({ type: 'text', nullable: true })
   examenFisicoPielAnexos?: string;
 
-  @Column({ length: 250, nullable: true })
+  @Column({ type: 'varchar', length: 1000, nullable: true })
   primerObservacion?: string;
 
   @Column({ nullable: true })

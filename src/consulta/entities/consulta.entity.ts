@@ -27,7 +27,7 @@ export class Consulta {
   @Column({ type: 'text', nullable: true })
   tratamiento?: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 1000 })
   observaciones?: string;
 
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
