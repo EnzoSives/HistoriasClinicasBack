@@ -15,9 +15,11 @@ export class Imagen {
   @Column()
   path: string;
 
-  @ManyToOne(() => Paciente, (paciente) => paciente.imagenes, { nullable: true })
+  // Si se elimina el paciente, eliminar las imágenes asociadas
+  @ManyToOne(() => Paciente, (paciente) => paciente.imagenes, { nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   paciente: Paciente;
 
-  @ManyToOne(() => Consulta, (consulta) => consulta.imagenes, { nullable: true })
+  // Si se elimina la consulta, eliminar las imágenes asociadas
+  @ManyToOne(() => Consulta, (consulta) => consulta.imagenes, { nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   consulta: Consulta;
 }

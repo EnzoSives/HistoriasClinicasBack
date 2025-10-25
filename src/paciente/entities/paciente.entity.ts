@@ -43,6 +43,7 @@ export interface DatosPaciente {
   examenFisicoSistemaMusculoEsqueletico?: string;
   examenFisicoPielAnexos?: string;
   primerObservacion?: string;
+  laboratorios?: string;
   imagen?: string;
   imagen2?: string;
   activo?: boolean;
@@ -166,6 +167,9 @@ export class Paciente {
 
   @Column({ type: 'varchar', length: 1000, nullable: true })
   primerObservacion?: string;
+
+  @Column({ type: 'varchar', length: 1000, nullable: true })
+  laboratorios?: string;
 
   @Column({ nullable: true })
   imagen?: string;

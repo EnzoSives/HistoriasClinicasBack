@@ -18,7 +18,6 @@ import { TurnoModule } from './turno/turno.module';
     ServeStaticModule.forRoot({
       serveRoot: '/uploads',
       rootPath: join(__dirname, '..', 'uploads'),
-      renderPath: '/*',
       serveStaticOptions: {
         index: false,
       },
