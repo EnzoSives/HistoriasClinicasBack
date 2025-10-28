@@ -19,4 +19,7 @@ export class ConsultaDto {
   
     @IsOptional()
     readonly tratamiento?: string;
+
+    @IsOptional()
+    readonly laboratorios?: string;
 }
