@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -15,33 +16,38 @@ import { TurnoModule } from './turno/turno.module';
 
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      serveRoot: '/uploads',
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveStaticOptions: {
-        index: false,
-      },
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: '66.97.45.96',
-      port: 3306,
-      username: 'base_enzo',
-      password: '%#zn7ajqx0qrljLr',
-      database: 'historias_clinicas',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+    ServeStaticModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => [
+        {
+          serveRoot: configService.get<string>('UPLOADS_SERVE_ROOT', '/uploads'),
+          rootPath: join(
+            __dirname,
+            '..',
+            configService.get<string>('UPLOADS_DIR', 'uploads'),
+          ),
+          serveStaticOptions: {
+            index: false,
+          },
+        },
+      ],
     }),
-    // TypeOrmModule.forRoot({
-    //   type: 'mysql',
-    //   host: '179.43.127.133',
-    //   port: 3306,
-    //   username: 'insp_pruebas',
-    //   password: '%#zn7ajqx0qrljLr',
-    //   database: 'pruebas_enzo',
-    //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    //   synchronize: true,
-    // }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST', 'localhost'),
+        port: Number(configService.get<string>('DB_PORT', '3306')),
+        username: configService.get<string>('DB_USERNAME', 'root'),
+        password: configService.get<string>('DB_PASSWORD', ''),
+        database: configService.get<string>('DB_DATABASE', ''),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: configService.get<string>('DB_SYNCHRONIZE', 'true') === 'true',
+      }),
+    }),
     UsersModule,
     PacienteModule,
     ConsultaModule,
