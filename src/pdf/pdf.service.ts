@@ -28,6 +28,14 @@ export class PdfService {
     yPosition += 5;
     doc.setFontSize(normalFontSize - 2);
     doc.setFont('helvetica', 'normal');
+    if (paciente?.medico) {
+      const nombreMedico = `${paciente.medico.nombre || ''} ${paciente.medico.apellido || ''}`.trim();
+      const matriculaMedico = paciente.medico.matricula || 'No especificada';
+      doc.text(`Dr. ${nombreMedico || 'No especificado'} - MP ${matriculaMedico}`, pageWidth / 2, yPosition, {
+        align: 'center',
+      });
+      yPosition += 6;
+    }
     // doc.text(
     //   'NORMA OFICIAL MEXICANA NOM-004-SSA3-2012, DEL EXPEDIENTE CLÍNICO',
     //   pageWidth / 2,
@@ -105,22 +113,25 @@ export class PdfService {
     };
     
     // --- FICHA DE IDENTIFICACIÓN ---
-    dibujarEncabezadoSeccion('FICHA DE IDENTIFICACIÓN');
-    agregarCampo('Nombre', paciente.nombre);
-    agregarCampo('Apellido', paciente.apellido);
-    agregarCampo('DNI', paciente.dni);
-    agregarCampo('Sexo', paciente.sexo);
-    agregarCampo('Edad', paciente.edad);
-    agregarCampo('Fecha de Nac.', paciente.fechaNacimiento);
-    agregarCampo('Lugar de Nac.', paciente.lugarNacimiento);
-    agregarCampo('Dirección', paciente.direccion);
-    agregarCampo('Teléfono Fijo', paciente.telefonoFijo);
-    agregarCampo('Teléfono Celular', paciente.telefonoCelular);
-    agregarCampo('Ocupación', paciente.ocupacion);
-    agregarCampo('Estado Civil', paciente.estadoCivil);
-    agregarCampo('Obra Social', paciente.obraSocial);
-    agregarCampo('Nº Afiliado', paciente.afiliadoObraSocial);
-    resetCols();
+    if (paciente) {
+      dibujarEncabezadoSeccion('FICHA DE IDENTIFICACIÓN');
+      agregarCampo('Nombre', paciente.nombre);
+      agregarCampo('Apellido', paciente.apellido);
+      agregarCampo('DNI', paciente.dni);
+      agregarCampo('Sexo', paciente.sexo);
+      agregarCampo('Edad', paciente.edad);
+      agregarCampo('Fecha de Nac.', paciente.fechaNacimiento);
+      agregarCampo('Lugar de Nac.', paciente.lugarNacimiento);
+      agregarCampo('Dirección', paciente.direccion);
+      agregarCampo('Teléfono Fijo', paciente.telefonoFijo);
+      agregarCampo('Teléfono Celular', paciente.telefonoCelular);
+      agregarCampo('Ocupación', paciente.ocupacion);
+      agregarCampo('Estado Civil', paciente.estadoCivil);
+      agregarCampo('Obra Social', paciente.obraSocial);
+      agregarCampo('Nº Afiliado', paciente.afiliadoObraSocial);
+      resetCols();
+
+    }
 
     // --- ANTECEDENTES ---
     const agregarCampoAncho = (label: string, value: string) => {
@@ -141,32 +152,37 @@ export class PdfService {
         yPosition += textLines.length * 5 + 3; // Ajustar el espacio después del texto
     };
 
-    dibujarEncabezadoSeccion('ANTECEDENTES');
-    agregarCampoAncho('Antecedentes Personales Médicos:', paciente.antecedentesPersonalesMedicos);
-    agregarCampoAncho('Antecedentes Quirúrgicos:', paciente.antecedentesQuirurgicos);
-    agregarCampoAncho('Alergias:', paciente.alergias);
-    agregarCampoAncho('Antecedentes Heredo Familiares:', paciente.antecedentesHeredoFamiliares);
-    agregarCampoAncho('Hábitos Tóxicos:', paciente.habitosToxicos);
-    agregarCampoAncho('Medicación Habitual:', paciente.medicacionHabitual);
-    yPosition += 5;
+    if (paciente) {
+      dibujarEncabezadoSeccion('ANTECEDENTES');
+      agregarCampoAncho('Antecedentes Personales Médicos:', paciente.antecedentesPersonalesMedicos);
+      agregarCampoAncho('Antecedentes Quirúrgicos:', paciente.antecedentesQuirurgicos);
+      agregarCampoAncho('Alergias:', paciente.alergias);
+      agregarCampoAncho('Antecedentes Heredo Familiares:', paciente.antecedentesHeredoFamiliares);
+      agregarCampoAncho('Antecedentes Gineco-Obstétricos:', paciente.antecedentesGinecoObstetricos);
+      agregarCampoAncho('Hábitos Tóxicos:', paciente.habitosToxicos);
+      agregarCampoAncho('Medicación Habitual:', paciente.medicacionHabitual);
+      yPosition += 5;
+    }
 
     // --- EXAMEN FÍSICO ---
-    dibujarEncabezadoSeccion('EXAMEN FÍSICO');
-    agregarCampo('Hábitos', paciente.examenFisicoHabito);
-    agregarCampo('Peso', paciente.examenFisicoPeso);
-    agregarCampo('Talla', paciente.examenFisicoTalla);
-    agregarCampo('IMC', paciente.examenFisicoIMC);
-    agregarCampo('TA', paciente.examenFisicoTA);
-    agregarCampo('FC', paciente.examenFisicoFC);
-    agregarCampo('FR', paciente.examenFisicoFR);
-    agregarCampo('Temperatura', paciente.examenFisicoTemperatura);
-    resetCols();
-    
-    agregarCampoAncho('Sistema Nervioso:', paciente.examenFisicoSistemaNervioso);
-    agregarCampoAncho('AP Cardiovascular:', paciente.examenFisicoAPCardiovascular);
-    agregarCampoAncho('AP Respiratorio:', paciente.examenFisicoAPRespiratorio);
-    agregarCampoAncho('AP Digestivo:', paciente.examenFisicoAPDigestivo);
-    yPosition += 5;
+    if (paciente) {
+      dibujarEncabezadoSeccion('EXAMEN FÍSICO');
+      agregarCampo('Hábitos', paciente.examenFisicoHabito);
+      agregarCampo('Peso', paciente.examenFisicoPeso);
+      agregarCampo('Talla', paciente.examenFisicoTalla);
+      agregarCampo('IMC', paciente.examenFisicoIMC);
+      agregarCampo('TA', paciente.examenFisicoTA);
+      agregarCampo('FC', paciente.examenFisicoFC);
+      agregarCampo('FR', paciente.examenFisicoFR);
+      agregarCampo('Temperatura', paciente.examenFisicoTemperatura);
+      resetCols();
+      
+      agregarCampoAncho('Sistema Nervioso:', paciente.examenFisicoSistemaNervioso);
+      agregarCampoAncho('AP Cardiovascular:', paciente.examenFisicoAPCardiovascular);
+      agregarCampoAncho('AP Respiratorio:', paciente.examenFisicoAPRespiratorio);
+      agregarCampoAncho('AP Digestivo:', paciente.examenFisicoAPDigestivo);
+      yPosition += 5;
+    }
 
     // --- CONSULTAS ---
     if (consultas && consultas.length > 0) {

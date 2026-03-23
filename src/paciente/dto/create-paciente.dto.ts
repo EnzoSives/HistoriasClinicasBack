@@ -38,6 +38,8 @@ export class PacienteDto {
   @IsOptional()
   readonly antecedentesHeredoFamiliares?: string;
   @IsOptional()
+  readonly antecedentesGinecoObstetricos?: string;
+  @IsOptional()
   readonly habitosToxicos?: string;
   @IsOptional()
   readonly medicacionHabitual?: string;

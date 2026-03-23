@@ -28,9 +28,9 @@ import { TurnoModule } from './turno/turno.module';
       port: 3306,
       username: 'base_enzo',
       password: '%#zn7ajqx0qrljLr',
-      database: 'historias_clinicas',
+      database: 'historias_clinicas_pruebas',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      synchronize: false,
     }),
     // TypeOrmModule.forRoot({
     //   type: 'mysql',

@@ -23,6 +23,7 @@ export interface DatosPaciente {
   antecedentesQuirurgicos?: string;
   alergias?: string;
   antecedentesHeredoFamiliares?: string;
+  antecedentesGinecoObstetricos?: string;
   habitosToxicos?: string;
   medicacionHabitual?: string;
   examenFisicoHabito?: string;
@@ -107,6 +108,9 @@ export class Paciente {
 
   @Column({ type: 'text', nullable: true })
   antecedentesHeredoFamiliares?: string;
+
+  @Column({ type: 'text', nullable: true })
+  antecedentesGinecoObstetricos?: string;
 
   @Column({ type: 'text', nullable: true })
   habitosToxicos?: string;
