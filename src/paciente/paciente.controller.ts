@@ -57,8 +57,8 @@ export class PacienteController {
     }
     // Combina los archivos de imagen en un solo array antes de pasarlos al servicio
     const allFiles: Express.Multer.File[] = [
-      ...(files.imagen ?? []),
-      ...(files.imagen2 ?? []),
+      ...(files?.imagen ?? []),
+      ...(files?.imagen2 ?? []),
     ];
     return this.pacienteService.crearPacienteConImagenes(pacienteDto, allFiles);
   }

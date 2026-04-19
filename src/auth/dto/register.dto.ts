@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import { 
   IsEmail, 
+  IsEnum,
   IsNotEmpty, 
   IsString, 
   MinLength, 
@@ -8,6 +9,7 @@ import {
   Matches,
   Length
 } from 'class-validator';
+import { Role } from 'src/common/enum/rol.enum';
 
 export class RegisterMedicoDto {
   // ========== DATOS DE USUARIO ==========
@@ -70,4 +72,8 @@ export class RegisterMedicoDto {
   @IsString({ message: 'El colegio médico debe ser un texto' })
   @Length(2, 200, { message: 'El colegio médico debe tener entre 2 y 200 caracteres' })
   colegioMedico?: string;
+
+  @IsOptional()
+  @IsEnum(Role, { message: 'El rol debe ser un valor válido' })
+  role?: Role;
 } 

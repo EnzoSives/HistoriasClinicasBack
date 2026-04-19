@@ -70,7 +70,7 @@ export class AuthService {
     nuevoUser.username = registerDto.username.trim();
     nuevoUser.password = hashedPassword;
     nuevoUser.email = registerDto.email.trim();
-    nuevoUser.role = Role.MEDICO;
+    nuevoUser.role = registerDto.role ?? Role.MEDICO;
 
     const userGuardado = await this.userRepository.save(nuevoUser);
 

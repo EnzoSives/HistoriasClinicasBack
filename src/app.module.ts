@@ -13,6 +13,7 @@ import { AppService } from './app.service';
 import { MedicoModule } from './medico/medico.module';
 import { ImagenModule } from './imagen/imagen.module';
 import { TurnoModule } from './turno/turno.module';
+import { HorarioMedicoModule } from './horario-medico/horario-medico.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { TurnoModule } from './turno/turno.module';
     MedicoModule,
     ImagenModule,
     TurnoModule,
+    HorarioMedicoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
