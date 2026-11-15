@@ -83,5 +83,8 @@ export class PacienteDto {
   readonly laboratorios?: string;
   @IsOptional()
   readonly fechaCreacion?: Date;
-  readonly id_medico?: number; // Asegúrate de que este campo sea opcional si no siempre se proporciona
+  @IsOptional()
+  readonly id_paciente?: number; // El front lo envía; el controller lo descarta
+  @IsOptional()
+  readonly id_medico?: number; // El front lo envía; el controller lo reemplaza por el del token
 }

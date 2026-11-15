@@ -66,7 +66,8 @@ export class PacienteController {
       ...(files?.imagen ?? []),
       ...(files?.imagen2 ?? []),
     ];
-    return this.pacienteService.crearPacienteConImagenes({ ...pacienteDto, id_medico }, allFiles);
+    const { id_paciente: _idPaciente, ...datos } = pacienteDto;
+    return this.pacienteService.crearPacienteConImagenes({ ...datos, id_medico }, allFiles);
   }
 
   /**
@@ -96,9 +97,10 @@ export class PacienteController {
       ...(files?.imagen ?? []),
       ...(files?.imagen2 ?? []),
     ];
+    const { id_paciente: _idPaciente, ...datos } = updatePacienteDto;
     return this.pacienteService.actualizarPacienteConImagenes(
       id,
-      updatePacienteDto,
+      datos,
       allFiles,
       req.user.id_medico,
     );
