@@ -14,9 +14,10 @@ export class CreateTurnoDto {
   @IsNumber()
   id_paciente: number;
 
-  @IsNotEmpty({ message: 'El ID del médico es requerido' })
+  // El controller lo reemplaza por el id_medico del token.
+  @IsOptional()
   @IsNumber()
-  id_medico: number;
+  id_medico?: number;
 
   @IsOptional()
   @IsString()

@@ -17,14 +17,14 @@ export class HorarioMedicoService {
     private readonly horarioRepository: Repository<HorarioMedico>,
   ) {}
 
-  async create(dto: CreateHorarioMedicoDto): Promise<HorarioMedico> {
+  async create(dto: CreateHorarioMedicoDto, id_medico: number): Promise<HorarioMedico> {
     if (dto.horaInicio >= dto.horaFin) {
       throw new BadRequestException('horaInicio debe ser anterior a horaFin');
     }
 
-    await this.checkOverlap(dto.id_medico, dto.diaSemana, dto.horaInicio, dto.horaFin);
+    await this.checkOverlap(id_medico, dto.diaSemana, dto.horaInicio, dto.horaFin);
 
-    const horario = this.horarioRepository.create(dto);
+    const horario = this.horarioRepository.create({ ...dto, id_medico });
     return this.horarioRepository.save(horario);
   }
 
@@ -59,8 +59,8 @@ export class HorarioMedicoService {
     });
   }
 
-  async update(id: number, dto: UpdateHorarioMedicoDto): Promise<HorarioMedico> {
-    const existing = await this.horarioRepository.findOneBy({ id });
+  async update(id: number, dto: UpdateHorarioMedicoDto, id_medico: number): Promise<HorarioMedico> {
+    const existing = await this.horarioRepository.findOneBy({ id, id_medico });
     if (!existing) {
       throw new NotFoundException(`Horario con ID ${id} no encontrado`);
     }
@@ -73,15 +73,15 @@ export class HorarioMedicoService {
     }
 
     const diaSemana = dto.diaSemana ?? existing.diaSemana;
-    const id_medico = dto.id_medico ?? existing.id_medico;
     await this.checkOverlap(id_medico, diaSemana, inicio, fin, id);
 
-    const horario = await this.horarioRepository.preload({ id, ...dto });
+    // id e id_medico van al final: no pueden ser pisados por el body.
+    const horario = await this.horarioRepository.preload({ ...dto, id, id_medico });
     return this.horarioRepository.save(horario!);
   }
 
-  async remove(id: number): Promise<{ affected?: number }> {
-    const result = await this.horarioRepository.delete(id);
+  async remove(id: number, id_medico: number): Promise<{ affected?: number }> {
+    const result = await this.horarioRepository.delete({ id, id_medico });
     if (result.affected === 0) {
       throw new NotFoundException(`Horario con ID ${id} no encontrado`);
     }

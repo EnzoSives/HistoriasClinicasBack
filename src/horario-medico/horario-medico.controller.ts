@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { HorarioMedicoService } from './horario-medico.service';
@@ -21,25 +22,26 @@ export class HorarioMedicoController {
   constructor(private readonly horarioMedicoService: HorarioMedicoService) {}
 
   @Post()
-  create(@Body() dto: CreateHorarioMedicoDto) {
-    return this.horarioMedicoService.create(dto);
+  create(@Body() dto: CreateHorarioMedicoDto, @Request() req: any) {
+    return this.horarioMedicoService.create(dto, req.user.id_medico);
   }
 
   @Get('medico/:id_medico')
-  findByMedico(@Param('id_medico', ParseIntPipe) id_medico: number) {
-    return this.horarioMedicoService.findByMedico(id_medico);
+  findByMedico(@Param('id_medico', ParseIntPipe) id_medico: number, @Request() req: any) {
+    return this.horarioMedicoService.findByMedico(req.user.id_medico);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateHorarioMedicoDto,
+    @Request() req: any,
   ) {
-    return this.horarioMedicoService.update(id, dto);
+    return this.horarioMedicoService.update(id, dto, req.user.id_medico);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.horarioMedicoService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+    return this.horarioMedicoService.remove(id, req.user.id_medico);
   }
 }

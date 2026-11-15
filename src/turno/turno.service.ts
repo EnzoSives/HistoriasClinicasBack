@@ -24,13 +24,16 @@ export class TurnoService {
     private readonly horarioRepository: Repository<HorarioMedico>,
   ) {}
 
-  async create(createTurnoDto: CreateTurnoDto): Promise<Turno> {
+  async create(createTurnoDto: CreateTurnoDto & { id_medico: number }): Promise<Turno> {
     const medico = await this.medicoRepository.findOneBy({ id_medico: createTurnoDto.id_medico });
     if (!medico) {
       throw new NotFoundException(`Médico con ID ${createTurnoDto.id_medico} no encontrado`);
     }
 
-    const paciente = await this.pacienteRepository.findOneBy({ id_paciente: createTurnoDto.id_paciente });
+    const paciente = await this.pacienteRepository.findOneBy({
+      id_paciente: createTurnoDto.id_paciente,
+      id_medico: createTurnoDto.id_medico,
+    });
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${createTurnoDto.id_paciente} no encontrado`);
     }
@@ -118,21 +121,32 @@ export class TurnoService {
     });
   }
 
-  async update(id: number, updateTurnoDto: UpdateTurnoDto, id_medico?: number): Promise<Turno> {
-    const turno = await this.turnoRepository.preload({
-      id_turno: id,
-      ...(id_medico ? { id_medico } : {}),
-      ...updateTurnoDto,
-    });
+  async update(id: number, updateTurnoDto: UpdateTurnoDto, id_medico: number): Promise<Turno> {
+    const existente = await this.turnoRepository.findOneBy({ id_turno: id, id_medico });
+    if (!existente) {
+      throw new NotFoundException(`Turno con ID ${id} no encontrado`);
+    }
 
+    if (updateTurnoDto.id_paciente !== undefined) {
+      const paciente = await this.pacienteRepository.findOneBy({
+        id_paciente: updateTurnoDto.id_paciente,
+        id_medico,
+      });
+      if (!paciente) {
+        throw new NotFoundException(`Paciente con ID ${updateTurnoDto.id_paciente} no encontrado`);
+      }
+    }
+
+    // id_turno e id_medico van al final: no pueden ser pisados por el body.
+    const turno = await this.turnoRepository.preload({ ...updateTurnoDto, id_turno: id, id_medico });
     if (!turno) {
       throw new NotFoundException(`Turno con ID ${id} no encontrado`);
     }
     return this.turnoRepository.save(turno);
   }
 
-  async remove(id: number, id_medico?: number): Promise<{ affected?: number }> {
-    const result = await this.turnoRepository.delete({ id_turno: id, ...(id_medico ? { id_medico } : {}) });
+  async remove(id: number, id_medico: number): Promise<{ affected?: number }> {
+    const result = await this.turnoRepository.delete({ id_turno: id, id_medico });
     if (result.affected === 0) {
       throw new NotFoundException(`Turno con ID ${id} no encontrado`);
     }

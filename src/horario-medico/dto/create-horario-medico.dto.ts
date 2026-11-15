@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   Max,
@@ -11,9 +12,10 @@ import {
 import { DiaSemana } from 'src/turno/enums/dia-semana.enum';
 
 export class CreateHorarioMedicoDto {
-  @IsNotEmpty()
+  // El controller lo reemplaza por el id_medico del token.
+  @IsOptional()
   @IsInt()
-  id_medico: number;
+  id_medico?: number;
 
   @IsEnum(DiaSemana)
   diaSemana: DiaSemana;
