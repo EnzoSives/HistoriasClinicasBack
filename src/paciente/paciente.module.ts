@@ -8,10 +8,12 @@ import { diskStorage } from 'multer';
 import path, { extname } from 'path';
 import { Consulta } from 'src/consulta/entities/consulta.entity';
 import { Medico } from 'src/medico/entities/medico.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Paciente, Consulta, Medico]),
+    AuthModule,
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {

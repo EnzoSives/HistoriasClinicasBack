@@ -118,9 +118,10 @@ export class TurnoService {
     });
   }
 
-  async update(id: number, updateTurnoDto: UpdateTurnoDto): Promise<Turno> {
+  async update(id: number, updateTurnoDto: UpdateTurnoDto, id_medico?: number): Promise<Turno> {
     const turno = await this.turnoRepository.preload({
       id_turno: id,
+      ...(id_medico ? { id_medico } : {}),
       ...updateTurnoDto,
     });
 
@@ -130,8 +131,8 @@ export class TurnoService {
     return this.turnoRepository.save(turno);
   }
 
-  async remove(id: number): Promise<{ affected?: number }> {
-    const result = await this.turnoRepository.delete(id);
+  async remove(id: number, id_medico?: number): Promise<{ affected?: number }> {
+    const result = await this.turnoRepository.delete({ id_turno: id, ...(id_medico ? { id_medico } : {}) });
     if (result.affected === 0) {
       throw new NotFoundException(`Turno con ID ${id} no encontrado`);
     }

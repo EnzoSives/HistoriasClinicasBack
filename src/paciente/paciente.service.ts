@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PacienteDto } from './dto/create-paciente.dto';
 import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { FindOneOptions, Repository } from 'typeorm';
@@ -35,11 +35,20 @@ export class PacienteService {
       if (!medico) {
         throw new NotFoundException(`El médico con ID ${pacienteDto.id_medico} no existe.`);
       }
+      const dni = pacienteDto.dni?.trim();
+      if (dni) {
+        const existente = await this.pacienteRepository.findOne({
+          where: { id_medico: pacienteDto.id_medico, dni },
+        });
+        if (existente) {
+          throw new ConflictException('Ya existe un paciente con ese DNI para este médico.');
+        }
+      }
       // --- FIN DE LA VALIDACIÓN ---
 
       // Separa la fecha del resto de los datos para manejarla correctamente.
       const { fechaNacimiento, ...restOfDto } = pacienteDto;
-      const paciente = this.pacienteRepository.create(restOfDto);
+      const paciente = this.pacienteRepository.create({ ...restOfDto, dni: dni || null });
 
       // --- CORRECCIÓN DE FECHA ---
       // Si se proporciona una fecha de nacimiento, la convierte a un objeto Date.
@@ -47,7 +56,7 @@ export class PacienteService {
       if (fechaNacimiento) {
         paciente.fechaNacimiento = new Date(fechaNacimiento);
         if (isNaN(paciente.fechaNacimiento.getTime())) {
-          throw new Error('Formato de fecha de nacimiento inválido.');
+          throw new BadRequestException('Formato de fecha de nacimiento inválido.');
         }
       }
 
@@ -63,7 +72,7 @@ export class PacienteService {
       return await this.pacienteRepository.save(paciente);
     } catch (error) {
       // Mejora del manejo de errores para devolver excepciones específicas
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException || error instanceof ConflictException) {
         throw error;
       }
       throw new HttpException(
@@ -86,9 +95,10 @@ export class PacienteService {
     id: number,
     updatePacienteDto: UpdatePacienteDto,
     files: Express.Multer.File[],
+    id_medico: number,
   ): Promise<Paciente> {
     const paciente = await this.pacienteRepository.findOne({
-      where: { id_paciente: id },
+      where: { id_paciente: id, id_medico },
       relations: ['imagenes'],
     });
 
@@ -96,15 +106,26 @@ export class PacienteService {
       throw new NotFoundException(`No se encontró el paciente con id: ${id}`);
     }
 
+    const dni = updatePacienteDto.dni?.trim();
+    if (dni && dni !== paciente.dni) {
+      const existente = await this.pacienteRepository.findOne({
+        where: { id_medico, dni },
+      });
+      if (existente && existente.id_paciente !== id) {
+        throw new ConflictException('Ya existe un paciente con ese DNI para este médico.');
+      }
+    }
+
     // Separa la fecha para manejarla antes de asignar el resto de los datos.
-    const { fechaNacimiento, ...restOfDto } = updatePacienteDto;
+    const { fechaNacimiento, id_medico: _idMedico, ...restOfDto } = updatePacienteDto;
     Object.assign(paciente, restOfDto);
+    if (updatePacienteDto.dni !== undefined) paciente.dni = dni || null;
 
     // --- CORRECCIÓN DE FECHA EN UPDATE ---
     if (fechaNacimiento) {
       paciente.fechaNacimiento = new Date(fechaNacimiento);
       if (isNaN(paciente.fechaNacimiento.getTime())) {
-        throw new Error('Formato de fecha de nacimiento inválido.');
+        throw new BadRequestException('Formato de fecha de nacimiento inválido.');
       }
     }
 
@@ -135,9 +156,9 @@ export class PacienteService {
     return await this.pacienteRepository.find({ relations: ['imagenes'] });
   }
 
-  public async getId(id: number): Promise<Paciente> {
+  public async getId(id: number, id_medico?: number): Promise<Paciente> {
     const paciente = await this.pacienteRepository.findOne({
-      where: { id_paciente: id },
+      where: { id_paciente: id, ...(id_medico ? { id_medico } : {}) },
       relations: ['imagenes', 'consultas', 'medico', 'medico.user'],
     });
     if (!paciente) {
@@ -153,9 +174,12 @@ export class PacienteService {
     });
   }
 
-  public async deletePaciente(id: number): Promise<boolean> {
+  public async deletePaciente(id: number, id_medico?: number): Promise<boolean> {
     try {
-      const result = await this.pacienteRepository.delete(id);
+      const result = await this.pacienteRepository.delete({
+        id_paciente: id,
+        ...(id_medico ? { id_medico } : {}),
+      });
       if (result.affected === 0) {
         throw new NotFoundException(`No se encontró el paciente con id: ${id} para eliminar.`);
       }

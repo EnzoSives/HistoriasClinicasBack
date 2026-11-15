@@ -7,9 +7,10 @@ import { Turno } from './entities/turno.entity';
 import { Medico } from 'src/medico/entities/medico.entity';
 import { Paciente } from 'src/paciente/entities/paciente.entity';
 import { HorarioMedico } from 'src/horario-medico/entities/horario-medico.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Turno, Medico, Paciente, HorarioMedico])],
+  imports: [TypeOrmModule.forFeature([Turno, Medico, Paciente, HorarioMedico]), AuthModule],
   controllers: [TurnoController],
   providers: [TurnoService],
 })

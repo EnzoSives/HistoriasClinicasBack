@@ -18,10 +18,10 @@ export class ConsultaService {
     return await this.consultaRepository.find({ relations: ['imagenes'] });
   }
 
-  public async getId(id: number): Promise<Consulta> {
+  public async getId(id: number, id_medico?: number): Promise<Consulta> {
     try {
       const criterio: FindOneOptions<Consulta> = { 
-        where: { id_consulta: id },
+        where: { id_consulta: id, ...(id_medico ? { id_medico } : {}) },
         relations: ['imagenes'] // Cargar imágenes
       };
       const consulta: Consulta = await this.consultaRepository.findOne(criterio);
@@ -40,7 +40,7 @@ export class ConsultaService {
 
  public async crearConsultaConImagenes(consultaDto: ConsultaDto, files: Express.Multer.File[], id_medico: number): Promise<Consulta> {
     try {
-        const paciente = await this.pacienteRepository.findOne({ where: { id_paciente: consultaDto.id_paciente } });
+        const paciente = await this.pacienteRepository.findOne({ where: { id_paciente: consultaDto.id_paciente, id_medico } });
         if (!paciente) {
             throw new NotFoundException(`El paciente con id: ${consultaDto.id_paciente} no existe.`);
         }
@@ -76,13 +76,28 @@ export class ConsultaService {
   public async updateConsultaId(
     id: number,
     consultaDto: Partial<ConsultaDto>,
+    id_medico?: number,
+    files?: Express.Multer.File[],
   ): Promise<Consulta> {
     try {
-      const criterio: FindOneOptions<Consulta> = { where: { id_consulta: id } };
+      const criterio: FindOneOptions<Consulta> = {
+        where: { id_consulta: id, ...(id_medico ? { id_medico } : {}) },
+        relations: ['imagenes'],
+      };
       let consulta: Consulta = await this.consultaRepository.findOne(criterio);
 
       if (consulta) {
-        Object.assign(consulta, consultaDto);
+        const { id_medico: _ignoredMedico, id_paciente: _ignoredPaciente, ...safeData } = consultaDto;
+        Object.assign(consulta, safeData);
+        if (files?.length) {
+          const nuevasImagenes = files.map(file => {
+            const imagen = new Imagen();
+            imagen.filename = file.filename;
+            imagen.path = file.path;
+            return imagen;
+          });
+          consulta.imagenes = [...(consulta.imagenes || []), ...nuevasImagenes];
+        }
 
         return await this.consultaRepository.save(consulta);
       } else {
@@ -96,15 +111,15 @@ export class ConsultaService {
     }
   }
 
-  public async deleteconsulta(id: number): Promise<boolean> {
+  public async deleteconsulta(id: number, id_medico?: number): Promise<boolean> {
     try {
-      const criterio: FindOneOptions<Consulta> = { where: { id_consulta: id } };
+      const criterio: FindOneOptions<Consulta> = { where: { id_consulta: id, ...(id_medico ? { id_medico } : {}) } };
       let consulta: Consulta = await this.consultaRepository.findOne(criterio);
 
       if (!consulta) {
         throw new Error(`No se pudo eliminar la consulta con id: ${id}`);
       } else {
-        await this.consultaRepository.delete(id);
+        await this.consultaRepository.delete({ id_consulta: id, ...(id_medico ? { id_medico } : {}) });
         return true;
       }
     } catch (error) {
@@ -115,19 +130,19 @@ export class ConsultaService {
     }
   }
 
-  public async getConsultasByPacienteId(idPaciente: number): Promise<Consulta[]> {
+  public async getConsultasByPacienteId(idPaciente: number, id_medico?: number): Promise<Consulta[]> {
+    const paciente = await this.pacienteRepository.findOne({
+      where: { id_paciente: idPaciente, ...(id_medico ? { id_medico } : {}) },
+    });
+    if (!paciente) throw new NotFoundException('Paciente no encontrado.');
     try {
       const criterio: FindManyOptions<Consulta> = { 
-        where: { paciente: { id_paciente: idPaciente } },
+        where: { paciente: { id_paciente: idPaciente }, ...(id_medico ? { id_medico } : {}) },
         relations: ['imagenes'] // Cargar imágenes
       };
       let consultas: Consulta[] = await this.consultaRepository.find(criterio);
 
-      if (consultas.length > 0) {
-        return consultas;
-      } else {
-        throw new Error(`No se encontraron consultas para el paciente con id: ${idPaciente}`);
-      }
+      return consultas;
     } catch (error) {
       throw new HttpException(
         { status: HttpStatus.NOT_FOUND, error: `500 - ERROR: ` + error },
@@ -144,11 +159,7 @@ export class ConsultaService {
       };
       const consultas: Consulta[] = await this.consultaRepository.find(criterio);
 
-      if (consultas.length > 0) {
-        return consultas;
-      } else {
-        throw new NotFoundException(`No se encontraron consultas para el médico con id: ${idMedico}`);
-      }
+      return consultas;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

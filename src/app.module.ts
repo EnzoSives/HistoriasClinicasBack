@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 import { UsersModule } from './users/users.module';
 import { PacienteModule } from './paciente/paciente.module';
@@ -20,22 +18,6 @@ import { HorarioMedicoModule } from './horario-medico/horario-medico.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ServeStaticModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => [
-        {
-          serveRoot: configService.get<string>('UPLOADS_SERVE_ROOT', '/uploads'),
-          rootPath: join(
-            __dirname,
-            '..',
-            configService.get<string>('UPLOADS_DIR', 'uploads'),
-          ),
-          serveStaticOptions: {
-            index: false,
-          },
-        },
-      ],
-    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -46,7 +28,7 @@ import { HorarioMedicoModule } from './horario-medico/horario-medico.module';
         password: configService.get<string>('DB_PASSWORD', ''),
         database: configService.get<string>('DB_DATABASE', ''),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get<string>('DB_SYNCHRONIZE', 'true') === 'true',
+        synchronize: configService.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
       }),
     }),
     UsersModule,

@@ -11,6 +11,8 @@ import {
   HttpException,
   HttpStatus,
   ParseIntPipe,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { PacienteService } from './paciente.service';
 import { PacienteDto } from './dto/create-paciente.dto';
@@ -18,6 +20,7 @@ import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { Paciente } from './entities/paciente.entity';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from '../config/multer.config'; // Asegúrate que la ruta a tu configuración de multer sea correcta
+import { AuthGuard } from 'src/auth/auth.guard';
 
 // Interfaz para dar un tipado claro a los archivos que se reciben
 interface UploadedPatientFiles {
@@ -26,6 +29,7 @@ interface UploadedPatientFiles {
 }
 
 @Controller('paciente')
+@UseGuards(AuthGuard)
 export class PacienteController {
   constructor(private readonly pacienteService: PacienteService) {}
 
@@ -48,8 +52,10 @@ export class PacienteController {
   crearPaciente(
     @Body() pacienteDto: PacienteDto,
     @UploadedFiles() files: UploadedPatientFiles,
+    @Request() req: any,
   ): Promise<Paciente> {
-    if (!pacienteDto.id_medico) {
+    const id_medico = req.user.id_medico;
+    if (!id_medico) {
       throw new HttpException(
         'El id_medico es requerido en el cuerpo de la solicitud',
         HttpStatus.BAD_REQUEST,
@@ -60,7 +66,7 @@ export class PacienteController {
       ...(files?.imagen ?? []),
       ...(files?.imagen2 ?? []),
     ];
-    return this.pacienteService.crearPacienteConImagenes(pacienteDto, allFiles);
+    return this.pacienteService.crearPacienteConImagenes({ ...pacienteDto, id_medico }, allFiles);
   }
 
   /**
@@ -83,38 +89,41 @@ export class PacienteController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePacienteDto: UpdatePacienteDto,
     @UploadedFiles() files: UploadedPatientFiles,
+    @Request() req: any,
   ): Promise<Paciente> {
 
-      const allFiles: Express.Multer.File[] = [
-      ...(files.imagen ?? []),
-      ...(files.imagen2 ?? []),
+    const allFiles: Express.Multer.File[] = [
+      ...(files?.imagen ?? []),
+      ...(files?.imagen2 ?? []),
     ];
     return this.pacienteService.actualizarPacienteConImagenes(
       id,
       updatePacienteDto,
       allFiles,
+      req.user.id_medico,
     );
   }
 
   @Get('all')
-  async getPacientes(): Promise<Paciente[]> {
-    return this.pacienteService.getAll();
+  async getPacientes(@Request() req: any): Promise<Paciente[]> {
+    return this.pacienteService.getPacientesByMedicoId(req.user.id_medico);
   }
 
   @Get(':id')
-  async getId(@Param('id', ParseIntPipe) id: number): Promise<Paciente> {
-    return this.pacienteService.getId(id);
+  async getId(@Param('id', ParseIntPipe) id: number, @Request() req: any): Promise<Paciente> {
+    return this.pacienteService.getId(id, req.user.id_medico);
   }
 
   @Get('medico/:id_medico')
   async getPacientesPorMedico(
     @Param('id_medico', ParseIntPipe) id_medico: number,
+    @Request() req: any,
   ): Promise<Paciente[]> {
-    return this.pacienteService.getPacientesByMedicoId(id_medico);
+    return this.pacienteService.getPacientesByMedicoId(req.user.id_medico);
   }
 
   @Delete('eliminar/:id')
-  deleteDato(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
-    return this.pacienteService.deletePaciente(id);
+  deleteDato(@Param('id', ParseIntPipe) id: number, @Request() req: any): Promise<boolean> {
+    return this.pacienteService.deletePaciente(id, req.user.id_medico);
   }
 }

@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entities/user.entity';
 import { Medico } from 'src/medico/entities/medico.entity';
 import { RegisterMedicoDto } from './dto/register.dto';
+import { UpdateMedicoProfileDto } from './dto/update-profile.dto';
  // Importar el DTO
 
 @Injectable()
@@ -70,7 +71,7 @@ export class AuthService {
     nuevoUser.username = registerDto.username.trim();
     nuevoUser.password = hashedPassword;
     nuevoUser.email = registerDto.email.trim();
-    nuevoUser.role = registerDto.role ?? Role.MEDICO;
+    nuevoUser.role = Role.MEDICO;
 
     const userGuardado = await this.userRepository.save(nuevoUser);
 
@@ -155,7 +156,6 @@ export class AuthService {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.medico', 'medico')
-      .leftJoinAndSelect('medico.pacientes', 'pacientes')
       .where('user.id = :id', { id: userId })
       .andWhere('user.isActive = :isActive', { isActive: true })
       .getOne();
@@ -167,44 +167,30 @@ export class AuthService {
     return user;
   }
 
-  async actualizarPerfil(
-    userId: number,
-    datosUser: Partial<User>,
-    datosMedico?: Partial<Medico>,
-  ) {
+  async obtenerPerfilPublico(userId: number) {
     const user = await this.obtenerPerfilCompleto(userId);
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      medico: user.medico ?? null,
+    };
+  }
 
-    // Actualizar datos de usuario
-    if (datosUser.password) {
-      const saltRounds = 10;
-      datosUser.password = await bcrypt.hash(datosUser.password, saltRounds);
+  async actualizarPerfil(userId: number, datosMedico: UpdateMedicoProfileDto) {
+    const user = await this.obtenerPerfilCompleto(userId);
+    if (!user.medico) throw new BadRequestException('Este usuario no tiene perfil médico.');
+    const allowed = [
+      'nombre', 'apellido', 'dni', 'telefono', 'especialidad', 'matricula',
+      'colegioMedico', 'direccionConsultorio', 'telefonoConsultorio',
+      'horarioAtencion', 'obrasSocialesAcepta', 'biografia', 'foto',
+    ] as const;
+    for (const field of allowed) {
+      if (datosMedico?.[field] !== undefined) user.medico[field] = datosMedico[field].trim();
     }
-
-    // Limpiar strings si existen
-    if (datosUser.username) {
-      datosUser.username = datosUser.username.trim();
-    }
-    if (datosUser.email) {
-      datosUser.email = datosUser.email.trim();
-    }
-
-    Object.assign(user, datosUser);
-    await this.userRepository.save(user);
-
-    // Actualizar datos de médico si existen
-    if (datosMedico && user.medico) {
-      // Limpiar strings en datos del médico
-      Object.keys(datosMedico).forEach(key => {
-        if (typeof datosMedico[key] === 'string') {
-          datosMedico[key] = datosMedico[key].trim();
-        }
-      });
-
-      Object.assign(user.medico, datosMedico);
-      await this.medicoRepository.save(user.medico);
-    }
-
-    return this.obtenerPerfilCompleto(userId);
+    await this.medicoRepository.save(user.medico);
+    return this.obtenerPerfilPublico(userId);
   }
 }
 

@@ -8,12 +8,15 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { HorarioMedicoService } from './horario-medico.service';
 import { CreateHorarioMedicoDto } from './dto/create-horario-medico.dto';
 import { UpdateHorarioMedicoDto } from './dto/update-horario-medico.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('horario-medico')
+@UseGuards(AuthGuard)
 export class HorarioMedicoController {
   constructor(private readonly horarioMedicoService: HorarioMedicoService) {}
 

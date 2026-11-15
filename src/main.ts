@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express'; // <-- 1. IMPORTAR
-import { join } from 'path'; // <-- 2. IMPORTAR
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   // 3. Especificar el tipo NestExpressApplication
@@ -9,17 +9,16 @@ async function bootstrap() {
 
   // Configurar CORS
   app.enableCors({
-    origin: '*',
+    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:9000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
- 
-  // 4. Servir archivos estáticos desde la carpeta 'uploads'
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/', // Las imágenes estarán disponibles en http://.../uploads/nombre_archivo.jpg
-    index: false // Disable automatic index.html lookup
-  });
 
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
   await app.listen(3007);
 }
 

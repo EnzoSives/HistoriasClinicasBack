@@ -1,5 +1,5 @@
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { randomBytes } from 'crypto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 // Opciones de configuración para Multer
@@ -11,7 +11,7 @@ export const multerOptions = {
 
   // Filtrar archivos para aceptar solo imágenes
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|pdf)$/)) {
+    if (['image/jpeg', 'image/png', 'image/gif', 'application/pdf'].includes(file.mimetype)) {
       // Aceptar el archivo
       cb(null, true);
     } else {
@@ -26,11 +26,13 @@ export const multerOptions = {
     destination: './uploads',
     // Generar un nombre de archivo único
     filename: (req, file, cb) => {
-      const randomName = Array(32)
-        .fill(null)
-        .map(() => Math.round(Math.random() * 16).toString(16))
-        .join('');
-      cb(null, `${randomName}${extname(file.originalname)}`);
+      const extension = {
+        'image/jpeg': '.jpg',
+        'image/png': '.png',
+        'image/gif': '.gif',
+        'application/pdf': '.pdf',
+      }[file.mimetype];
+      cb(null, `${randomBytes(16).toString('hex')}${extension}`);
     },
   }),
 };

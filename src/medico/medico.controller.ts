@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { MedicoService } from './medico.service';
 import { CreateMedicoDto } from './dto/create-medico.dto';
 import { UpdateMedicoDto } from './dto/update-medico.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('medico')
+@UseGuards(AuthGuard)
 export class MedicoController {
   constructor(private readonly medicoService: MedicoService) {}
 

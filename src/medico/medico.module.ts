@@ -6,9 +6,10 @@ import { User } from 'src/users/entities/user.entity';
 import { Paciente } from 'src/paciente/entities/paciente.entity';
 import { Consulta } from 'src/consulta/entities/consulta.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Medico, User, Paciente, Consulta])],
+  imports:[TypeOrmModule.forFeature([Medico, User, Paciente, Consulta]), AuthModule],
   controllers: [MedicoController],
   providers: [MedicoService],
 })

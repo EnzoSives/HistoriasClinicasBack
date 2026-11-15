@@ -7,9 +7,10 @@ import { Paciente } from 'src/paciente/entities/paciente.entity';
 import { PdfService } from 'src/pdf/pdf.service';
 import { PacienteService } from 'src/paciente/paciente.service';
 import { Medico } from 'src/medico/entities/medico.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Consulta, Paciente, Medico])],
+  imports:[TypeOrmModule.forFeature([Consulta, Paciente, Medico]), AuthModule],
   controllers: [ConsultaController],
   providers: [ConsultaService, PdfService, PacienteService],
 })
